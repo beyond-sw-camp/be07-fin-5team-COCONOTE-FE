@@ -1,15 +1,19 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <v-sheet class="global_bg">
+    <!-- <HeaderComponent @open-sidebar="toggleSidebar" /> -->
+    <!-- <AppSidebar ref="sidebar" /> -->
+    <v-sheet>
+      <router-view />
+    </v-sheet>
+    <!-- <FooterComponent /> -->
+  </v-sheet>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
   }
 }
 </script>
