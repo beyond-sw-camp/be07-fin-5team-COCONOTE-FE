@@ -1,6 +1,7 @@
 import {createRouter, createWebHistory} from 'vue-router';
 
 import HomePage from '@/views/HomePage.vue';
+import { canvasRouter } from './canvasRouter';
 
 const routes = [
     {
@@ -10,7 +11,7 @@ const routes = [
         name: 'HOME',
         component: HomePage
     },
-    // ...memberRouter,
+    ...canvasRouter,
 ]
 
 
