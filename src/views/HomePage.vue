@@ -1,7 +1,7 @@
 <template>
-  <v-container>
+  <v-sheet>
     <h1>test</h1>
-  </v-container>
+  </v-sheet>
 </template>
 
 <script>
