@@ -125,6 +125,31 @@ export default {
         }
       );
     },
+    // beforeRouteLeave(to, from, next) {
+    //   // 구독 해제 및 WebSocket 연결 종료
+    //   if (this.subscription) {
+    //     this.subscription.unsubscribe();
+    //     console.log("WebSocket subscription unsubscribed.");
+    //   }
+    //   if (this.ws) {
+    //     this.ws.disconnect(() => {
+    //       console.log("WebSocket connection closed.");
+    //     });
+    //   }
+    //   next(); // 라우트 변경을 계속 진행
+    // },
+  },
+  beforeUnmount() {
+    // 컴포넌트가 파괴되기 전에 구독 해제 및 WebSocket 연결 종료
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // 구독 해제
+      console.log("WebSocket subscription unsubscribed.");
+    }
+    if (this.ws) {
+      this.ws.disconnect(() => {
+        console.log("WebSocket connection closed.");
+      });
+    }
   },
 };
 </script>
