@@ -1,5 +1,5 @@
 <template>
-  <div class="container" v-cloak>
+  <div class="container">
     <div>
       <h2>{{ room.name }}</h2>
     </div>
@@ -28,7 +28,8 @@
 <script>
 import axios from "axios";
 import SockJS from "sockjs-client";
-import Stomp from "stompjs";
+// import Stomp from "stompjs";
+import { Stomp } from "@stomp/stompjs";
 
 export default {
   name: "CanvasDetailComponent",
@@ -59,17 +60,28 @@ export default {
         });
     },
     sendMessage() {
-      this.ws.send(
-        "/pub/chat/message",
-        {},
-        JSON.stringify({
+      if (this.ws && this.ws.connected) {
+        console.log("Sending message:", {
           type: "TALK",
           roomId: this.roomId,
           sender: this.sender,
           message: this.message,
-        })
-      );
-      this.message = "";
+        });
+
+        this.ws.send(
+          `${process.env.VUE_APP_API_BASE_URL}/pub/chat/message`,
+          {},
+          JSON.stringify({
+            type: "TALK",
+            roomId: this.roomId,
+            sender: this.sender,
+            message: this.message,
+          })
+        );
+        this.message = "";
+      } else {
+        console.log("WebSocket is not connected.");
+      }
     },
     recvMessage(recv) {
       this.messages.unshift({
@@ -79,17 +91,22 @@ export default {
       });
     },
     connect() {
-      this.sock = new SockJS("/ws-stomp");
+      this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+      console.log("@@@@sock", this.sock);
       this.ws = Stomp.over(this.sock);
       this.ws.connect(
         {},
         (frame) => {
-          this.ws.subscribe(`/sub/chat/room/${this.roomId}`, (message) => {
-            const recv = JSON.parse(message.body);
-            this.recvMessage(recv);
-          });
+          console.log(frame);
+          this.ws.subscribe(
+            `${process.env.VUE_APP_API_BASE_URL}/sub/chat/room/${this.roomId}`,
+            (message) => {
+              const recv = JSON.parse(message.body);
+              this.recvMessage(recv);
+            }
+          );
           this.ws.send(
-            "/pub/chat/message",
+            `${process.env.VUE_APP_API_BASE_URL}/pub/chat/message`,
             {},
             JSON.stringify({
               type: "ENTER",
@@ -99,10 +116,11 @@ export default {
           );
         },
         (error) => {
+          console.log(error);
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
               console.log("connection reconnect");
-              this.sock = new SockJS("/ws-stomp");
+              this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
               this.ws = Stomp.over(this.sock);
               this.connect();
             }, 10 * 1000);
@@ -114,8 +132,8 @@ export default {
 };
 </script>
 
-<style scoped>
+<!-- <style scoped>
 [v-cloak] {
   display: none;
 }
-</style>
+</style> -->

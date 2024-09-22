@@ -77,7 +77,8 @@ export default {
       if (sender) {
         localStorage.setItem("wschat.sender", sender);
         localStorage.setItem("wschat.roomId", roomId);
-        router.push(`/chat/room/enter/${roomId}`);
+        router.push(`/canvas/detail`);
+        // router.push(`/canvas/detail/${roomId}`);
       }
     };
 
