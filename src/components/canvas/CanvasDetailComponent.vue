@@ -53,11 +53,9 @@ export default {
   },
   methods: {
     findRoom() {
-      axios
-        .get(`${process.env.VUE_APP_API_BASE_URL}/chat/room/${this.roomId}`)
-        .then((response) => {
-          this.room = response.data;
-        });
+      axios.get(`http://localhost:8080/chat/room/${this.roomId}`).then((response) => {
+        this.room = response.data;
+      });
     },
     sendMessage() {
       if (this.ws && this.ws.connected) {
@@ -69,7 +67,7 @@ export default {
         });
 
         this.ws.send(
-          `${process.env.VUE_APP_API_BASE_URL}/pub/chat/message`,
+          `/pub/chat/message`,
           {},
           JSON.stringify({
             type: "TALK",
@@ -84,6 +82,7 @@ export default {
       }
     },
     recvMessage(recv) {
+      console.log("@@@@@@@@@@@@@ >> ", recv);
       this.messages.unshift({
         type: recv.type,
         sender: recv.type === "ENTER" ? "[알림]" : recv.sender,
@@ -91,22 +90,20 @@ export default {
       });
     },
     connect() {
-      this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+      // this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+      this.sock = new SockJS(`http://localhost:8080/ws-stomp`);
       console.log("@@@@sock", this.sock);
       this.ws = Stomp.over(this.sock);
       this.ws.connect(
         {},
         (frame) => {
           console.log(frame);
-          this.ws.subscribe(
-            `${process.env.VUE_APP_API_BASE_URL}/sub/chat/room/${this.roomId}`,
-            (message) => {
-              const recv = JSON.parse(message.body);
-              this.recvMessage(recv);
-            }
-          );
+          this.ws.subscribe(`/sub/chat/room/${this.roomId}`, (message) => {
+            const recv = JSON.parse(message.body);
+            this.recvMessage(recv);
+          });
           this.ws.send(
-            `${process.env.VUE_APP_API_BASE_URL}/pub/chat/message`,
+            `/pub/chat/message`,
             {},
             JSON.stringify({
               type: "ENTER",
@@ -120,7 +117,7 @@ export default {
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
               console.log("connection reconnect");
-              this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+              this.sock = new SockJS(`http://localhost:8080/ws-stomp`);
               this.ws = Stomp.over(this.sock);
               this.connect();
             }, 10 * 1000);
