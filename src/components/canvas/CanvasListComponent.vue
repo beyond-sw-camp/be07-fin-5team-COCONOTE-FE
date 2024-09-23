@@ -36,39 +36,32 @@
 
 <script>
 import axios from "axios";
-import { ref, onMounted } from "vue";
-import { useRouter } from "vue-router";
+// import VueRouter from "vue-router"; // Vue 2에서는 router를 따로 불러와서 사용해야 함
 
 export default {
   name: "CanvasListComponent",
   data() {
     return {
+      room_name: "",
       channelId: 1,
+      chatrooms: [],
     };
   },
-  setup() {
-    const room_name = ref("");
-    const channelId = ref(1);
-    const chatrooms = ref([]);
-    const router = useRouter();
-
-    const findAllRoom = () => {
+  methods: {
+    findAllRoom() {
       axios
-        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${channelId.value}/list`)
+        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${this.channelId}/list`)
         .then((response) => {
-          chatrooms.value = response.data.result.content;
+          this.chatrooms = response.data.result.content;
         });
-    };
-
-    const createRoom = () => {
-      if (room_name.value === "") {
+    },
+    createRoom() {
+      if (this.room_name === "") {
         alert("방 제목을 입력해 주십시요.");
         return;
       } else {
-        // const params = new URLSearchParams();
-        // params.append("name", room_name.value);
         const params = {
-          title: room_name.value,
+          title: this.room_name,
           parentCanvasId: null,
           channelId: 1,
         };
@@ -76,35 +69,25 @@ export default {
           .post(`${process.env.VUE_APP_API_BASE_URL}/canvas/create`, params)
           .then((response) => {
             alert(response.data.title + "방 개설에 성공하였습니다.");
-            room_name.value = "";
-            findAllRoom();
+            this.room_name = "";
+            this.findAllRoom();
           })
           .catch(() => {
             alert("채팅방 개설에 실패하였습니다.");
           });
       }
-    };
-
-    const enterRoom = (roomId) => {
+    },
+    enterRoom(roomId) {
       const sender = prompt("대화명을 입력해 주세요.");
       if (sender) {
         localStorage.setItem("wschat.sender", sender);
         localStorage.setItem("wschat.roomId", roomId);
-        router.push(`/canvas/detail`);
-        // router.push(`/canvas/detail/${roomId}`);
+        this.$router.push(`/canvas/detail`);
       }
-    };
-
-    onMounted(() => {
-      findAllRoom();
-    });
-
-    return {
-      room_name,
-      chatrooms,
-      createRoom,
-      enterRoom,
-    };
+    },
+  },
+  mounted() {
+    this.findAllRoom();
   },
 };
 </script>

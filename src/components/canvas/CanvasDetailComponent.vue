@@ -14,12 +14,24 @@
         @keypress.enter="sendMessage"
       />
       <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="sendMessage">보내기</button>
+        <button class="btn btn-primary" type="button" @click="sendMessage">
+          블록추가
+        </button>
       </div>
     </div>
     <ul class="list-group">
       <li class="list-group-item" v-for="message in messages" :key="message.timestamp">
         {{ message.sender }} - {{ message.message }}
+      </li>
+    </ul>
+    <ul class="block-group">
+      <li class="block-group-item" v-for="block in blocks" :key="block.id">
+        {{ block.id }} >> {{ block.content }}
+        <ul class="block-kid-group" v-if="block.childBlock.length > 0">
+          <li class="block-group-item" v-for="childrenBlock in block.childBlock" :key="childrenBlock.id">
+            {{ childrenBlock.id }} :: {{ childrenBlock.content }}
+          </li>
+        </ul>
       </li>
     </ul>
   </div>
@@ -43,21 +55,30 @@ export default {
       ws: null,
       sock: null,
       reconnect: 0,
+      canvas: {},
+      blocks: [],
     };
   },
   mounted() {
     this.roomId = localStorage.getItem("wschat.roomId");
     this.sender = localStorage.getItem("wschat.sender");
-    this.findRoom();
+    this.getCanvasAndBlockInfo();
     this.connect();
   },
   methods: {
-    findRoom() {
-      axios
-        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${this.roomId}`)
-        .then((response) => {
-          this.room = response.data.result;
-        });
+    async getCanvasAndBlockInfo() {
+      const response = await axios.get(
+        `${process.env.VUE_APP_API_BASE_URL}/canvas/${this.roomId}`
+      );
+
+      this.room = response.data.result;
+
+      console.log("####", response.data.result);
+
+      const blockResponse = await axios.get(
+        `${process.env.VUE_APP_API_BASE_URL}/block/${this.room.id}/list`
+      );
+      this.blocks = blockResponse.data.result;
     },
     sendMessage() {
       if (this.ws && this.ws.connected) {
