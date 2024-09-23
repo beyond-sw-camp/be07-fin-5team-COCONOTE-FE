@@ -25,10 +25,10 @@
       <li
         class="list-group-item list-group-item-action"
         v-for="item in chatrooms"
-        :key="item.id"
-        @click="enterRoom(item.id)"
+        :key="item.roomId"
+        @click="enterRoom(item.roomId)"
       >
-        {{ item.title }}
+        {{ item.name }}
       </li>
     </ul>
   </div>
@@ -41,23 +41,15 @@ import { useRouter } from "vue-router";
 
 export default {
   name: "CanvasListComponent",
-  data() {
-    return {
-      channelId: 1,
-    };
-  },
   setup() {
     const room_name = ref("");
-    const channelId = ref(1);
     const chatrooms = ref([]);
     const router = useRouter();
 
     const findAllRoom = () => {
-      axios
-        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${channelId.value}/list`)
-        .then((response) => {
-          chatrooms.value = response.data.result.content;
-        });
+      axios.get(`${process.env.VUE_APP_API_BASE_URL}/chat/rooms`).then((response) => {
+        chatrooms.value = response.data;
+      });
     };
 
     const createRoom = () => {
@@ -65,17 +57,12 @@ export default {
         alert("방 제목을 입력해 주십시요.");
         return;
       } else {
-        // const params = new URLSearchParams();
-        // params.append("name", room_name.value);
-        const params = {
-          title: room_name.value,
-          parentCanvasId: null,
-          channelId: 1,
-        };
+        const params = new URLSearchParams();
+        params.append("name", room_name.value);
         axios
-          .post(`${process.env.VUE_APP_API_BASE_URL}/canvas/create`, params)
+          .post(`${process.env.VUE_APP_API_BASE_URL}/chat/room`, params)
           .then((response) => {
-            alert(response.data.title + "방 개설에 성공하였습니다.");
+            alert(response.data.name + "방 개설에 성공하였습니다.");
             room_name.value = "";
             findAllRoom();
           })

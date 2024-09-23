@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div>
-      <h2>{{ room.title }}</h2>
+      <h2>{{ room.name }}</h2>
     </div>
     <div class="input-group">
       <div class="input-group-prepend">
@@ -53,11 +53,9 @@ export default {
   },
   methods: {
     findRoom() {
-      axios
-        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${this.roomId}`)
-        .then((response) => {
-          this.room = response.data.result;
-        });
+      axios.get(`http://localhost:8080/chat/room/${this.roomId}`).then((response) => {
+        this.room = response.data;
+      });
     },
     sendMessage() {
       if (this.ws && this.ws.connected) {
@@ -93,19 +91,19 @@ export default {
     },
     connect() {
       // this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
-      this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+      this.sock = new SockJS(`http://localhost:8080/ws-stomp`);
       console.log("@@@@sock", this.sock);
       this.ws = Stomp.over(this.sock);
       this.ws.connect(
         {},
         (frame) => {
           console.log(frame);
-          this.ws.subscribe(`/sub/canvas/room/${this.roomId}`, (message) => {
+          this.ws.subscribe(`/sub/chat/room/${this.roomId}`, (message) => {
             const recv = JSON.parse(message.body);
             this.recvMessage(recv);
           });
           this.ws.send(
-            `/pub/canvas/message`,
+            `/pub/chat/message`,
             {},
             JSON.stringify({
               type: "ENTER",
@@ -119,7 +117,7 @@ export default {
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
               console.log("connection reconnect");
-              this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+              this.sock = new SockJS(`http://localhost:8080/ws-stomp`);
               this.ws = Stomp.over(this.sock);
               this.connect();
             }, 10 * 1000);
