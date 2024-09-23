@@ -1,19 +1,32 @@
 <template>
-  <v-app>
+  <div>
     <h1>canvas Detail Test</h1>
     <CanvasDetailComponent />
-  </v-app>
+    <h1>Tiptap</h1>
+    <div>
+      <TipTabEditor v-model="content" />
+
+      <div class="output-group">
+        <label>Content</label>
+        <code>{{ content }}</code>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import CanvasDetailComponent from "@/components/canvas/CanvasDetailComponent.vue";
+import TipTabEditor from '@/components/TipTabEditor.vue'
 
 export default {
   components: {
     CanvasDetailComponent,
+    TipTabEditor
   },
   data() {
-    return {};
+    return {
+      content: '<p>A Vue.js wrapper component for Tiptap to use <code>v-model</code>.</p>',
+    };
   },
   computed: {},
   created() {},
