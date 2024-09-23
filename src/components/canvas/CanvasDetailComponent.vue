@@ -69,7 +69,7 @@ export default {
         });
 
         this.ws.send(
-          `/pub/chat/message`,
+          `/pub/canvas/message`,
           {},
           JSON.stringify({
             type: "TALK",
