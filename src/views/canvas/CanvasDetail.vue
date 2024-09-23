@@ -1,16 +1,16 @@
 <template>
   <v-app>
-    <h1>canvas List Test</h1>
-    <CanvasListComponent />
+    <h1>canvas Detail Test</h1>
+    <CanvasDetailComponent />
   </v-app>
 </template>
 
 <script>
-import CanvasListComponent from "@/components/canvas/CanvasListComponent.vue";
+import CanvasDetailComponent from "@/components/canvas/CanvasDetailComponent.vue";
 
 export default {
   components: {
-    CanvasListComponent,
+    CanvasDetailComponent,
   },
   data() {
     return {};
