@@ -80,6 +80,8 @@ import ListItem from '@tiptap/extension-list-item'
 import TextStyle from '@tiptap/extension-text-style'
 import StarterKit from '@tiptap/starter-kit'
 import { Editor, EditorContent } from '@tiptap/vue-3'
+import CustomBlock from '@/components/tiptab/CustomBlock' // CustomBlock 가져오기
+// import DraggableItem from '@/components/tiptab/DraggableItem'
 
 export default {
   components: {
@@ -98,14 +100,16 @@ export default {
         Color.configure({ types: [TextStyle.name, ListItem.name] }),
         TextStyle.configure({ types: [ListItem.name] }),
         StarterKit,
+        CustomBlock,
+        // DraggableItem
       ],
       content: `
         <h2>
           Hi there,
         </h2>
-        <p>
-          this is a <em>basic</em> example of <strong>Tiptap</strong>. Sure, there are all kind of basic text styles you’d probably expect from a text editor. But wait until you see the lists:
-        </p>
+        <div>
+          222 this is a <em>basic</em> example of <strong>Tiptap</strong>. Sure, there are all kind of basic text styles you’d probably expect from a text editor. But wait until you see the lists:
+        </div>
         <ul>
           <li>
             That’s a bullet list with one …
@@ -114,9 +118,9 @@ export default {
             … or two list items.
           </li>
         </ul>
-        <p>
+        <div>
           Isn’t that great? And all of that is editable. But wait, there’s more. Let’s try a code block:
-        </p>
+        </div>
         <pre><code class="language-css">body {
   display: none;
 }</code></pre>
@@ -130,6 +134,64 @@ export default {
         </blockquote>
       `,
     })
+
+    this.editor.on('beforeCreate', ({ editor }) => {
+      // Before the view is created.
+      console.log(`beforeCreate`, editor)
+    })
+
+    this.editor.on('create', ({ editor }) => {
+      // The editor is ready.
+      console.log(`create`, editor)
+    })
+
+    this.editor.on('update', ({ editor }) => {
+      // The content has changed.
+      console.log(`update`, editor)
+    })
+
+    this.editor.on('selectionUpdate', ({ editor }) => {
+      // The selection has changed.
+      console.log(`selectionUpdate`, editor)
+      // this.editor.chain().focus().insertContent({
+      //   type: 'customBlock',
+      //   attrs: {
+      //     id: `block-id-${Math.random().toString(36).substr(2, 9)}`  // 고유한 ID 생성
+      //   },
+      //   content: [
+      //     {
+      //       type: 'text',
+      //       text: 'New custom block added with a unique block ID.'
+      //     }
+      //   ]
+      // }).run();
+    })
+
+    this.editor.on('transaction', ({ editor, transaction }) => {
+      // The editor state has changed.
+      console.log(`transaction`, editor, transaction)
+    })
+
+    this.editor.on('focus', ({ editor, event }) => {
+      // The editor is focused.
+      console.log(`focus `, editor , event)
+    })
+
+    // this.editor.on('blur', ({ editor, event }) => {
+    //   // The editor isn’t focused anymore.
+    //   console.log(`blur `,editor,event)
+    // })
+
+    this.editor.on('destroy', () => {
+      // The editor is being destroyed.
+      console.log(`destroy`)
+    })
+
+    this.editor.on('contentError', ({ editor, error, disableCollaboration }) => {
+      // The editor content does not match the schema.
+      console.log(`contentError`, editor,error,disableCollaboration)
+    })
+
   },
 
   beforeUnmount() {

@@ -16,7 +16,7 @@
 
 <script>
 import CanvasDetailComponent from "@/components/canvas/CanvasDetailComponent.vue";
-import TipTabEditor from '@/components/TipTabEditor.vue'
+import TipTabEditor from '@/components/tiptab/TipTabEditor.vue'
 
 export default {
   components: {
