@@ -143,8 +143,9 @@ import { Editor, EditorContent } from "@tiptap/vue-3";
 import CustomBlock from "@/components/tiptab/CustomBlock"; // CustomBlock 가져오기
 
 import UniqueID from "@tiptap-pro/extension-unique-id";
-import DragHandle from '@tiptap-pro/extension-drag-handle'
-import NodeRange from '@tiptap-pro/extension-node-range'
+import DragHandle from "@tiptap-pro/extension-drag-handle";
+import NodeRange from "@tiptap-pro/extension-node-range";
+// import { isChangeOrigin } from "@tiptap/extension-collaboration";
 // import DraggableItem from '@/components/tiptab/DraggableItem'
 
 export default {
@@ -170,6 +171,7 @@ export default {
         // DraggableItem
         UniqueID.configure({
           types: ["heading", "paragraph", "bulletList", "listItem"],
+          // filterTransaction: (transaction) => !isChangeOrigin(transaction),
         }),
         NodeRange.configure({
           // allow to select only on depth 0
@@ -178,11 +180,11 @@ export default {
         }),
         DragHandle.configure({
           render() {
-            const element = document.createElement('div')
+            const element = document.createElement("div");
 
-            element.classList.add('custom-drag-handle')
+            element.classList.add("custom-drag-handle");
 
-            return element
+            return element;
           },
         }),
       ],
@@ -190,35 +192,7 @@ export default {
         this.localHTML = this.editor.getHTML();
         this.localJSON = this.editor.getJSON();
       },
-      content: `
-        <p data-id="2">zxc</p>
-        <p data-id="2">aaaaaa</p>
-        <ul data-id="2">
-            <li data-id="1">
-              <p data-id="sub-sub-1">Hi there</p>
-            </li>
-        </ul>
-        <p data-id="2">
-          this is a <em>basic</em> example of <strong>Tiptap</strong>. Sure, there are all kind of basic text styles you’d probably expect from a text editor. But wait until you see the lists:
-        </p>
-        <h1 data-id="771">ggg</h1>
-        <ul data-id="99999">
-          <li data-id="22222">
-            <p data-id="sub-1">That’s a bullet list with one …</p>
-          </li>
-          <li data-id="7777">
-            <p data-id="sub-444">… or two list items.</p>
-          </li>
-        </ul>
-        <ul data-id="414141">
-          <li data-id="2120">
-            <p data-id="sub-2">That’s a bullet list with one …</p>
-          </li>
-          <li data-id="41762">
-            <p data-id="sub-3">… or two list items.</p>
-          </li>
-        </ul>
-      `,
+      content: ``,
     });
 
     this.editor.on("beforeCreate", ({ editor }) => {
@@ -233,29 +207,19 @@ export default {
 
     this.editor.on("update", ({ editor }) => {
       // The content has changed.
-      console.log(`update`, editor);
+      console.log(`update`, editor, editor.view?.trackWrites?.data);
     });
 
     this.editor.on("selectionUpdate", ({ editor }) => {
       // The selection has changed.
-      console.log(`selectionUpdate`, editor);
-      // this.editor.chain().focus().insertContent({
-      //   type: 'customBlock',
-      //   attrs: {
-      //     id: `block-id-${Math.random().toString(36).substr(2, 9)}`  // 고유한 ID 생성
-      //   },
-      //   content: [
-      //     {
-      //       type: 'text',
-      //       text: 'New custom block added with a unique block ID.'
-      //     }
-      //   ]
-      // }).run();
+      console.log(`selectionUpdate`, editor, editor.view?.trackWrites?.data
+      , editor.view?.trackWrites?.parentElement?.dataset?.id
+      , editor.view?.trackWrites?.dataset?.id);
     });
 
     this.editor.on("transaction", ({ editor, transaction }) => {
       // The editor state has changed.
-      console.log(`transaction`, editor, transaction);
+      console.log(`transaction`, transaction,  editor.view?.trackWrites?.data);
     });
 
     this.editor.on("focus", ({ editor, event }) => {
@@ -376,11 +340,10 @@ export default {
     border-top: 1px solid var(--gray-2);
     margin: 2rem 0;
   }
-  
 }
 
 ::selection {
-  background-color: #70CFF850;
+  background-color: #70cff850;
 }
 
 .ProseMirror {
@@ -395,7 +358,7 @@ export default {
   }
 
   .ProseMirror-widget * {
-    margin-top: auto
+    margin-top: auto;
   }
 
   ul,
@@ -422,12 +385,12 @@ export default {
     position: absolute;
     pointer-events: none;
     z-index: -1;
-    content: '';
+    content: "";
     top: -0.25rem;
     left: -0.25rem;
     right: -0.25rem;
     bottom: -0.25rem;
-    background-color: #70CFF850;
+    background-color: #70cff850;
     border-radius: 0.2rem;
   }
 }
@@ -439,11 +402,11 @@ export default {
     justify-content: center;
     width: 1rem;
     height: 1.25rem;
-    content: '⠿';
+    content: "⠿";
     font-weight: 700;
     cursor: grab;
-    background:#0D0D0D10;
-    color: #0D0D0D50;
+    background: #0d0d0d10;
+    color: #0d0d0d50;
     border-radius: 0.25rem;
   }
 }
