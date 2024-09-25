@@ -165,6 +165,10 @@ export default {
       type: Object,
       required: true, // 부모로부터 받아야 하는 값
     },
+    parentUpdateEditorContent: {
+      type: Object,
+      required: false
+    }
   },
 
   data() {
@@ -173,9 +177,15 @@ export default {
       localJSON: "",
       localHTML: "",
       defaultContent: this.initialContent, // 부모로부터 받은 데이터를 초기값으로 설정
+      updateEditorContent : this.parentUpdateEditorContent
     };
   },
-
+  watch: {
+    // 부모에서 전달받은 content 값이 변경될 때 실행할 함수
+    parentUpdateEditorContent(newVal) {
+      this.onContentChanged(newVal);
+    }
+  },
   mounted() {
     console.log(">>>>>>>>PPP", this.defaultContent)
     this.editor = new Editor({
@@ -354,6 +364,11 @@ export default {
 
       return null; // 찾지 못했을 때
     },
+    onContentChanged(newContent) {
+      console.log('부모 컴포넌트로부터 새로운 content를 받았습니다:', newContent);
+      // 여기에 content 변경 시 처리할 로직 추가
+      // this.editor.setContent(newContent); // 예: TipTap 에디터에 새로운 내용을 반영
+    }
   },
   beforeUnmount() {
     this.editor.destroy();
