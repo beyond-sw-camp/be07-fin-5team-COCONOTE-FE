@@ -160,16 +160,24 @@ export default {
   components: {
     EditorContent,
   },
+  props: {
+    initialContent: {
+      type: Object,
+      required: true, // 부모로부터 받아야 하는 값
+    },
+  },
 
   data() {
     return {
       editor: null,
       localJSON: "",
       localHTML: "",
+      defaultContent: this.initialContent, // 부모로부터 받은 데이터를 초기값으로 설정
     };
   },
 
   mounted() {
+    console.log(">>>>>>>>PPP", this.defaultContent)
     this.editor = new Editor({
       extensions: [
         Color.configure({ types: [TextStyle.name, ListItem.name] }),
@@ -206,14 +214,28 @@ export default {
         this.localHTML = this.editor.getHTML();
         this.localJSON = this.editor.getJSON();
 
-        const updateContent = this.editor.view?.trackWrites?.data;
-        const updateBlockID =
-          this.editor.view?.trackWrites?.parentElement?.dataset?.id;
-        // console.error("👀👀", updateContent, updateBlockID, this.editor);
+        // const { selection } = this.editor
+        // const position = this.editor.state.doc.resolve(this.editor.state.selection.from)
+        // console.error("---- ",position)
+        // position.start()
+        // const { from, to } = selection
+        // const text = state.doc.textBetween(from, to, ' ')
+
+        const selectedNode = this.editor.state.selection;
+        
+        if (!selectedNode) {
+          return false;
+        }
+        
+        
+
+        const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
         if(!updateBlockID){
           return false;
         }
+        const updateContent = selectedNode?.$head?.path[3]?.content?.content[0]?.text;
 
+        // console.log('⭐ Node:', updateBlockID, updateContent);
         const searchElAndPrevEl = this.findPreviousId(
             this.localJSON.content,
             updateBlockID
@@ -224,19 +246,17 @@ export default {
 
         // console.error("➡️prev➡️➡️", previousId);
         const parentId = null;
-        if (updateBlockID && updateContent) {
-          // blockId와 blockContent 둘 다 있을 때 진행함
-          // 여기서 감지해서 보내기
+
+        // 여기서 감지해서 보내기
           this.$parent.updateBlock(
             updateBlockID,
             targetElType,
-            updateContent,
+            updateContent == "" ? "" : updateContent,
             previousId,
             parentId
           );
-        }
       },
-      content: ``,
+      content: this.defaultContent,
     });
 
     // this.editor.on("beforeCreate", ({ editor }) => {
