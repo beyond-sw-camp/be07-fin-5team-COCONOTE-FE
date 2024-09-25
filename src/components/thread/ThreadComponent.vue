@@ -1,9 +1,8 @@
 <template>
-    <h2>threadComponent</h2>
     <div class="thread">
         <div>
             <div class="image">
-                image
+                {{ id }}
             </div>
         </div>
         <div class="thread-content">
@@ -21,7 +20,7 @@
   
 <script>
     export default {
-    props: ['image', 'nickName', 'createdTime','content','files'],
+    props: ['image', 'nickName', 'createdTime','content','files','id'],
     data() {
         return {};
     },
