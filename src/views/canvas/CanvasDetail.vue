@@ -4,7 +4,7 @@
     <CanvasDetailComponent />
     <h1>Tiptap</h1>
     <div>
-      <TipTabEditor v-model="content" />
+      
 
       <div class="output-group">
         <label>Content</label>
@@ -16,12 +16,10 @@
 
 <script>
 import CanvasDetailComponent from "@/components/canvas/CanvasDetailComponent.vue";
-import TipTabEditor from '@/components/tiptab/TipTabEditor.vue'
 
 export default {
   components: {
     CanvasDetailComponent,
-    TipTabEditor
   },
   data() {
     return {

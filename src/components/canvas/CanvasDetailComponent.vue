@@ -35,9 +35,14 @@
       </li>
     </ul>
   </div>
+  <div>
+    <TipTabEditor v-model="content" />
+  </div>
 </template>
 
 <script>
+
+import TipTabEditor from '@/components/tiptab/TipTabEditor.vue'
 import axios from "axios";
 import SockJS from "sockjs-client";
 // import Stomp from "stompjs";
@@ -45,9 +50,12 @@ import { Stomp } from "@stomp/stompjs";
 
 export default {
   name: "CanvasDetailComponent",
+  components: {
+    TipTabEditor
+  },
   data() {
     return {
-      roomId: "",
+      canvasId: "",
       room: {},
       sender: "",
       message: "",
@@ -60,7 +68,9 @@ export default {
     };
   },
   mounted() {
-    this.roomId = localStorage.getItem("wschat.roomId");
+    this.roomId = localStorage.getItem("wschat.canvasId");
+    this.canvasId = this.roomId;
+
     this.sender = localStorage.getItem("wschat.sender");
     this.getCanvasAndBlockInfo();
     this.connect();
@@ -82,21 +92,21 @@ export default {
     },
     sendMessage() {
       if (this.ws && this.ws.connected) {
-        console.log("Sending message:", {
-          type: "TALK",
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@Sending message:@@@@@@@@@@@@@@@@@@@@@@@@@@@@", {
+          type: "CANVAS",
           roomId: this.roomId,
           sender: this.sender,
-          message: this.message,
+          message: JSON.stringify(this.message),
         });
 
         this.ws.send(
           `/pub/canvas/message`,
           {},
           JSON.stringify({
-            type: "TALK",
+            type: "CANVAS",
             roomId: this.roomId,
             sender: this.sender,
-            message: this.message,
+            message: JSON.stringify(this.message),
           })
         );
         this.message = "";
@@ -161,6 +171,29 @@ export default {
     //   }
     //   next(); // 라우트 변경을 계속 진행
     // },
+
+
+    // tiptabEditor method
+    updateBlock(blockFeId, blockElType, blockContent, previousId, parentId){
+      if(!blockFeId || !blockContent){ // blockId와 blockContent 둘 다 있을 때 진행함 (tiptap과 더블체크)
+        return false;
+      }
+      console.log("⭐⭐⭐⭐⭐⭐editor에서 호출⭐⭐⭐⭐⭐")
+      console.log(blockFeId, blockContent)
+
+      this.message = {
+        "canvasId": this.canvasId,
+        "prevBlockId": previousId,
+        "parentBlockId": parentId,
+        "contents": blockContent,
+        "type": blockElType,
+        "feId": blockFeId,
+      };
+      
+
+      this.sendMessage()
+
+    },
   },
   beforeUnmount() {
     // 컴포넌트가 파괴되기 전에 구독 해제 및 WebSocket 연결 종료

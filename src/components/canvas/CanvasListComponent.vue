@@ -12,7 +12,7 @@
       <input
         type="text"
         class="form-control"
-        v-model="room_name"
+        v-model="canvasName"
         @keyup.enter="createRoom"
       />
       <div class="input-group-append">
@@ -42,7 +42,7 @@ export default {
   name: "CanvasListComponent",
   data() {
     return {
-      room_name: "",
+      canvasName: "",
       channelId: 1,
       chatrooms: [],
     };
@@ -56,12 +56,12 @@ export default {
         });
     },
     createRoom() {
-      if (this.room_name === "") {
-        alert("방 제목을 입력해 주십시요.");
+      if (this.canvasName === "") {
+        alert("캔버스 제목을 입력해 주십시요.");
         return;
       } else {
         const params = {
-          title: this.room_name,
+          title: this.canvasName,
           parentCanvasId: null,
           channelId: 1,
         };
@@ -69,7 +69,7 @@ export default {
           .post(`${process.env.VUE_APP_API_BASE_URL}/canvas/create`, params)
           .then((response) => {
             alert(response.data.title + "방 개설에 성공하였습니다.");
-            this.room_name = "";
+            this.canvasName = "";
             this.findAllRoom();
           })
           .catch(() => {
@@ -77,11 +77,11 @@ export default {
           });
       }
     },
-    enterRoom(roomId) {
+    enterRoom(canvasId) {
       const sender = prompt("대화명을 입력해 주세요.");
       if (sender) {
         localStorage.setItem("wschat.sender", sender);
-        localStorage.setItem("wschat.roomId", roomId);
+        localStorage.setItem("wschat.canvasId", canvasId);
         this.$router.push(`/canvas/detail`);
       }
     },

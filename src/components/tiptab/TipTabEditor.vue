@@ -30,8 +30,12 @@
         >
           Code
         </button>
-        <button @click="editor.chain().focus().unsetAllMarks().run()">Clear marks</button>
-        <button @click="editor.chain().focus().clearNodes().run()">Clear nodes</button>
+        <button @click="editor.chain().focus().unsetAllMarks().run()">
+          Clear marks
+        </button>
+        <button @click="editor.chain().focus().clearNodes().run()">
+          Clear nodes
+        </button>
         <button
           @click="editor.chain().focus().setParagraph().run()"
           :class="{ 'is-active': editor.isActive('paragraph') }"
@@ -101,7 +105,9 @@
         <button @click="editor.chain().focus().setHorizontalRule().run()">
           Horizontal rule
         </button>
-        <button @click="editor.chain().focus().setHardBreak().run()">Hard break</button>
+        <button @click="editor.chain().focus().setHardBreak().run()">
+          Hard break
+        </button>
         <button
           @click="editor.chain().focus().undo().run()"
           :disabled="!editor.can().chain().focus().undo().run()"
@@ -116,7 +122,9 @@
         </button>
         <button
           @click="editor.chain().focus().setColor('#958DF1').run()"
-          :class="{ 'is-active': editor.isActive('textStyle', { color: '#958DF1' }) }"
+          :class="{
+            'is-active': editor.isActive('textStyle', { color: '#958DF1' }),
+          }"
         >
           Purple
         </button>
@@ -170,7 +178,13 @@ export default {
         CustomBlock,
         // DraggableItem
         UniqueID.configure({
-          types: ["heading", "paragraph", "bulletList", "listItem"],
+          types: [
+            "heading",
+            "paragraph",
+            "orderedList",
+            "bulletList",
+            "listItem",
+          ],
           // filterTransaction: (transaction) => !isChangeOrigin(transaction),
         }),
         NodeRange.configure({
@@ -191,58 +205,136 @@ export default {
       onUpdate: () => {
         this.localHTML = this.editor.getHTML();
         this.localJSON = this.editor.getJSON();
+
+        const updateContent = this.editor.view?.trackWrites?.data;
+        const updateBlockID =
+          this.editor.view?.trackWrites?.parentElement?.dataset?.id;
+        // console.error("👀👀", updateContent, updateBlockID, this.editor);
+        if(!updateBlockID){
+          return false;
+        }
+
+        const searchElAndPrevEl = this.findPreviousId(
+            this.localJSON.content,
+            updateBlockID
+          );
+        
+        const previousId = searchElAndPrevEl[0];
+        const targetElType = searchElAndPrevEl[1];
+
+        // console.error("➡️prev➡️➡️", previousId);
+        const parentId = null;
+        if (updateBlockID && updateContent) {
+          // blockId와 blockContent 둘 다 있을 때 진행함
+          // 여기서 감지해서 보내기
+          this.$parent.updateBlock(
+            updateBlockID,
+            targetElType,
+            updateContent,
+            previousId,
+            parentId
+          );
+        }
       },
       content: ``,
     });
 
-    this.editor.on("beforeCreate", ({ editor }) => {
-      // Before the view is created.
-      console.log(`beforeCreate`, editor);
-    });
+    // this.editor.on("beforeCreate", ({ editor }) => {
+    //   // Before the view is created.
+    //   console.log(`beforeCreate`, editor);
+    // });
 
-    this.editor.on("create", ({ editor }) => {
-      // The editor is ready.
-      console.log(`create`, editor);
-    });
+    // this.editor.on("create", ({ editor }) => {
+    //   // The editor is ready.
+    //   console.log(`create`, editor);
+    // });
 
-    this.editor.on("update", ({ editor }) => {
-      // The content has changed.
-      console.log(`update`, editor, editor.view?.trackWrites?.data);
-    });
+    // this.editor.on("update", ({ editor }) => {
+    //   // The content has changed.
+    //   console.log(`update`, editor.view?.trackWrites?.data, editor);
+    // });
 
-    this.editor.on("selectionUpdate", ({ editor }) => {
-      // The selection has changed.
-      console.log(`selectionUpdate`, editor, editor.view?.trackWrites?.data
-      , editor.view?.trackWrites?.parentElement?.dataset?.id
-      , editor.view?.trackWrites?.dataset?.id);
-    });
+    // this.editor.on("selectionUpdate", ({ editor }) => {
+    //   // The selection has changed.
+    //   console.log(`selectionUpdate`, editor.view?.trackWrites?.data
+    //   , editor.view?.trackWrites?.parentElement?.dataset?.id
+    //   , editor.view?.trackWrites?.dataset?.id, editor, );
+    //   // console.log(">>>>>>>>>>>>>>>",this.editor.commands.selectParentNode())
+    //   // const uid = (() => true)(editor.view.state.selection)?.node.attrs.uid;
 
-    this.editor.on("transaction", ({ editor, transaction }) => {
-      // The editor state has changed.
-      console.log(`transaction`, transaction,  editor.view?.trackWrites?.data);
-    });
+    //   // console.log(uid)
 
-    this.editor.on("focus", ({ editor, event }) => {
-      // The editor is focused.
-      console.log(`focus `, editor, event);
-    });
+    //   // if (lastStoredUID.value != uid) {
+    //   //   nodesChanged.value = true;
+    //   //   lastStoredUID.value = uid;
+    //   // } else {
+    //   //   nodesChanged.value = false;
+    //   // }
+
+    //   // 여기서 감지해서 보내기
+    //   // this.$parent.updateBlock(editor.view?.trackWrites?.parentElement?.dataset?.id, editor.view?.trackWrites?.data);
+    // });
+
+    // this.editor.on("transaction", ({ editor, transaction }) => {
+    //   // The editor state has changed.
+    //   console.log(`transaction`,  editor.view?.trackWrites?.data, transaction);
+    // });
+
+    // this.editor.on("focus", ({ editor, event }) => {
+    //   // The editor is focused.
+    //   console.log(`focus `, editor, event);
+    // });
 
     // this.editor.on('blur', ({ editor, event }) => {
     //   // The editor isn’t focused anymore.
     //   console.log(`blur `,editor,event)
     // })
 
-    this.editor.on("destroy", () => {
-      // The editor is being destroyed.
-      console.log(`destroy`);
-    });
+    // this.editor.on("destroy", () => {
+    //   // The editor is being destroyed.
+    //   console.log(`destroy`);
+    // });
 
-    this.editor.on("contentError", ({ editor, error, disableCollaboration }) => {
-      // The editor content does not match the schema.
-      console.log(`contentError`, editor, error, disableCollaboration);
-    });
+    // this.editor.on("contentError", ({ editor, error, disableCollaboration }) => {
+    //   // The editor content does not match the schema.
+    //   console.log(`contentError`, editor, error, disableCollaboration);
+    // });
   },
+  methods: {
+    findPreviousId(obj, targetId) {
+      return this.recursiveSearch(obj, targetId);
+    },
+    recursiveSearch(items, targetId, previousId = null) {
+      if (!items || !Array.isArray(items)) return null;
 
+      for (const item of items) {
+        // 현재 객체가 targetId인 경우, previousId를 반환
+        if (item.attrs && item.attrs.id === targetId) {
+          const returnArr = [previousId, item.type];
+          return returnArr;
+        }
+
+        // 현재 객체에 id가 있다면 그 값을 이전 id로 저장
+        if (item.attrs && item.attrs.id) {
+          previousId = item.attrs.id;
+        }
+
+        // 하위 content가 있으면 재귀적으로 검색
+        if (item.content && Array.isArray(item.content)) {
+          const found = this.recursiveSearch(
+            item.content,
+            targetId,
+            previousId
+          );
+          if (found) {
+            return found; // 값을 찾았으면 반환
+          }
+        }
+      }
+
+      return null; // 찾지 못했을 때
+    },
+  },
   beforeUnmount() {
     this.editor.destroy();
   },
