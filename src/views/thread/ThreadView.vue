@@ -48,7 +48,7 @@ import { debounce } from 'lodash';
         ws: null,
         sock: null,
         reconnect: 0,
-        pageSize: 20,
+        pageSize: 40,
         currentPage: 0,
         isLoading: false,
         isLastPage: false,
@@ -86,7 +86,7 @@ import { debounce } from 'lodash';
               this.currentPage++;
               this.isLastPage = response.data.result.last
               // this.messages = [...this.messages, ...response.data.result.content]
-              
+
               // 기존 메시지의 ID 집합을 생성
               const existingMessageIds = new Set(this.messages.map(msg => msg.id));
 
@@ -102,7 +102,7 @@ import { debounce } from 'lodash';
       },
       debouncedScrollPagination: debounce(async function() {
         const list = document.getElementById('list-group');
-        const isTop = list.scrollTop <= 20;
+        const isTop = list.scrollTop <= 800;
 
         if (isTop && !this.isLastPage && !this.isLoading) {
           this.isLoading = true;
@@ -115,7 +115,7 @@ import { debounce } from 'lodash';
       }, 200),
       async scrollPagination() {
         const list = document.getElementById('list-group');
-        const isTop = list.scrollTop <= 100;
+        const isTop = list.scrollTop <= 1600;
         // "현재화면 + 스크롤로 이동한 화면 > 전체화면 -n" 의 조건이 성립되면 추가 데이터 로드
         // const isBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 20;
         console.log("scrollPagination%%%%%%%%%%%%%%%%%%%");
