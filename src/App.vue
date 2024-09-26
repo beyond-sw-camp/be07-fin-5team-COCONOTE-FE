@@ -4,12 +4,12 @@
     <div>
       <InnerMenu />
     </div>
-    <!-- <HeaderComponent @open-sidebar="toggleSidebar" /> -->
-    <!-- <AppSidebar ref="sidebar" /> -->
+    
+    
     <v-sheet class="main-content">
       <router-view />
     </v-sheet>
-    <!-- <FooterComponent /> -->
+    
   </v-app>
 </template>
 
