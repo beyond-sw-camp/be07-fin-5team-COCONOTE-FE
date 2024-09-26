@@ -6,7 +6,7 @@
         title="멤버"
         @click="selectedMenu = 'InnerRelated멤버MenuHome'"
         :class="{ 'selected-item': selectedMenu === '멤버' }"
-        class="chenel-item"
+        class="channel-item"
       ></v-list-item>
 
     </v-list>
