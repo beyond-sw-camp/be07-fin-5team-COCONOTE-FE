@@ -387,7 +387,6 @@ export default {
           // 해당 요소의 텍스트를 변경
           targetElement.textContent = newContent.contents;
         } else {
-          console.log("😭😭😭😭😭😭😭");
           const typeEl = {
             heading: "h",
             paragraph: "p",
@@ -405,7 +404,6 @@ export default {
           newElement.setAttribute("data-id", newContent.feId);
           newElement.textContent = newContent.contents;
 
-          console.log("😭 ",newElement)
 
           if (newContent.prevBlockId != null) {
             let prevElement = document.querySelector(
