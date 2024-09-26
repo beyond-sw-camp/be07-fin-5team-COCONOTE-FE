@@ -1,13 +1,17 @@
 <template>
-  <v-navigation-drawer :width="242">
-    <v-list-item title="sub menu" subtitle="Vuetify"></v-list-item>
-    <v-divider></v-divider>
-    <v-list-item link title="List Item 1"></v-list-item>
-    <v-list-item link title="List Item 2"></v-list-item>
-    <v-list-item link title="List Item 3"></v-list-item>
+  <v-navigation-drawer permanent class="innerSubMenu" :width="220">
+    <h1>코코노트 동아리</h1>
+    <v-list>
+      <v-list-item
+        title="멤버"
+        @click="selectedMenu = 'InnerRelated멤버MenuHome'"
+        :class="{ 'selected-item': selectedMenu === '멤버' }"
+        class="chenel-item"
+      ></v-list-item>
+
+    </v-list>
   </v-navigation-drawer>
 </template>
-
 
 <script>
 export default {
@@ -15,3 +19,7 @@ export default {
   components: {},
 };
 </script>
+
+<style lang="scss" scoped>
+  @import "@/assets/css/innerRelated.scss"; /* SCSS 파일을 불러오기 */
+</style>
