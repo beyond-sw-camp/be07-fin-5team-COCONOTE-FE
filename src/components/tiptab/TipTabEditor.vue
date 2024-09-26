@@ -130,7 +130,7 @@
         </button>
       </div>
     </div>
-    <div style="background-color: #ccc">
+    <div id="editorArea" style="background-color: #ccc">
       <editor-content :editor="editor" />
     </div>
     <div style="width: 100%; margin-top: 30px">
@@ -167,8 +167,8 @@ export default {
     },
     parentUpdateEditorContent: {
       type: Object,
-      required: false
-    }
+      required: false,
+    },
   },
 
   data() {
@@ -177,17 +177,17 @@ export default {
       localJSON: "",
       localHTML: "",
       defaultContent: this.initialContent, // 부모로부터 받은 데이터를 초기값으로 설정
-      updateEditorContent : this.parentUpdateEditorContent
+      updateEditorContent: this.parentUpdateEditorContent,
     };
   },
   watch: {
     // 부모에서 전달받은 content 값이 변경될 때 실행할 함수
     parentUpdateEditorContent(newVal) {
       this.onContentChanged(newVal);
-    }
+    },
   },
   mounted() {
-    console.log(">>>>>>>>PPP", this.defaultContent)
+    console.log(">>>>>>>>PPP", this.defaultContent);
     this.editor = new Editor({
       extensions: [
         Color.configure({ types: [TextStyle.name, ListItem.name] }),
@@ -232,25 +232,24 @@ export default {
         // const text = state.doc.textBetween(from, to, ' ')
 
         const selectedNode = this.editor.state.selection;
-        
+
         if (!selectedNode) {
           return false;
         }
-        
-        
 
         const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
-        if(!updateBlockID){
+        if (!updateBlockID) {
           return false;
         }
-        const updateContent = selectedNode?.$head?.path[3]?.content?.content[0]?.text;
+        const updateContent =
+          selectedNode?.$head?.path[3]?.content?.content[0]?.text;
 
         // console.log('⭐ Node:', updateBlockID, updateContent);
         const searchElAndPrevEl = this.findPreviousId(
-            this.localJSON.content,
-            updateBlockID
-          );
-        
+          this.localJSON.content,
+          updateBlockID
+        );
+
         const previousId = searchElAndPrevEl[0];
         const targetElType = searchElAndPrevEl[1];
 
@@ -258,13 +257,13 @@ export default {
         const parentId = null;
 
         // 여기서 감지해서 보내기
-          this.$parent.updateBlock(
-            updateBlockID,
-            targetElType,
-            updateContent == "" ? "" : updateContent,
-            previousId,
-            parentId
-          );
+        this.$parent.updateBlock(
+          updateBlockID,
+          targetElType,
+          updateContent == "" ? "" : updateContent,
+          previousId,
+          parentId
+        );
       },
       content: this.defaultContent,
     });
@@ -365,10 +364,99 @@ export default {
       return null; // 찾지 못했을 때
     },
     onContentChanged(newContent) {
-      console.log('부모 컴포넌트로부터 새로운 content를 받았습니다:', newContent);
+      console.log(
+        "부모 컴포넌트로부터 새로운 content를 받았습니다:",
+        newContent
+      );
+      console.log(this.editor);
+
+      let targetElement = document.querySelector(
+        `#editorArea [data-id="${newContent.feId}"]`
+      );
+
+      if (newContent.method == "delete") {
+        // 삭제한 경우
+        if (targetElement) {
+          // ⭐ 자식 생각 필요
+          targetElement.remove();
+        }
+      } else {
+        // 생성이나, 현재 targetElement가 없는 update의 경우
+        if (targetElement) {
+          // 이미 있는 내용 변경
+          // 해당 요소의 텍스트를 변경
+          targetElement.textContent = newContent.contents;
+        } else {
+          console.log("😭😭😭😭😭😭😭");
+          const typeEl = {
+            heading: "h",
+            paragraph: "p",
+            orderedList: "ol",
+            bulletList: "ul",
+            listItem: "li",
+          };
+
+          let elTagType = typeEl[newContent.type];
+          if (elTagType === "h") {
+            elTagType += "1";
+          }
+
+          let newElement = document.createElement(elTagType);
+          newElement.setAttribute("data-id", newContent.feId);
+          newElement.textContent = newContent.contents;
+
+          console.log("😭 ",newElement)
+
+          if (newContent.prevBlockId != null) {
+            let prevElement = document.querySelector(
+              `#editorArea [data-id="${newContent.prevBlockId}"]`
+            );
+            prevElement.insertAdjacentElement("afterend", newElement);
+            return false;
+          } else if (newContent.parentBlockId != null) {
+            let parentElement = document.querySelector(
+              `#editorArea [data-id="${newContent.parentBlockId}"]`
+            );
+            parentElement.appendChild(newElement);
+            return false;
+          }
+        }
+        return false;
+      }
+
+
+      // const from = this.editor.state.selection.from
+      // const to = this.editor.state.selection.to
+
+      // const endPos = this.editor.state.doc.nodeSize - 2
+      // console.log(endPos,from,to)
+      // // Cut out content from range and put it at the end of the document
+      // this.editor.commands.cut({ from, to }, endPos)
+
+      // nodesChanged.value = true;
+      // this.editor.commands.insertContentAt(1, [
+      //     {
+      //       type: 'paragraph',
+      //       content: [
+      //         {
+      //           type: 'text',
+      //           text: '으아아아압 테스트 insert 1번째 줄!!!!',
+      //         },
+      //       ],
+      //     },
+      //   ],
+      //   {
+      //     updateSelection: true,
+      //     parseOptions: {
+      //       preserveWhitespace: 'full',
+      //     },
+      //   }
+      // )
+
+      // nodesChanged.value = false;
       // 여기에 content 변경 시 처리할 로직 추가
       // this.editor.setContent(newContent); // 예: TipTap 에디터에 새로운 내용을 반영
-    }
+    },
   },
   beforeUnmount() {
     this.editor.destroy();
