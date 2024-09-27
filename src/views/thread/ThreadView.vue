@@ -1,13 +1,13 @@
 <template>
   <v-app>
     <ChannelCommonMenu />
-    <ThreadComponent />
+    <!-- <ThreadComponent /> -->
   </v-app>
 </template>
   
   <script>
 import ChannelCommonMenu from "@/components/basic/ChannelCommonMenu.vue";
-import ThreadComponent from "@/components/thread/ThreadComponent.vue";
+// import ThreadComponent from "@/components/thread/ThreadComponent.vue";
 
 export default {
   props: {
@@ -18,7 +18,7 @@ export default {
   },
   components: {
     ChannelCommonMenu,
-    ThreadComponent,
+    // ThreadComponent,
   },
   data() {
     return {};

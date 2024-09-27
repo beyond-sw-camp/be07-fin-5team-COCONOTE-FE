@@ -5,25 +5,19 @@
         prepend-icon="mdi-home"
         title="home"
         @click="selectedMenu = 'home'"
-        :class="{'selected-item': selectedMenu === 'home'}"
+        :class="{ 'selected-item': selectedMenu === 'home' }"
       ></v-list-item>
 
       <v-list-item
         prepend-icon="mdi-account-group"
         title="member"
         @click="selectedMenu = 'member'"
-        :class="{'selected-item': selectedMenu === 'member'}"
+        :class="{ 'selected-item': selectedMenu === 'member' }"
       ></v-list-item>
-        
     </v-list>
   </v-navigation-drawer>
-
-  <div v-if="selectedMenu === 'home'">
-    <InnerRelatedMenuHome />
-  </div>
-  <div v-if="selectedMenu === 'member'">
-    <InnerRelatedMenuMember />
-  </div>
+  <InnerRelatedMenuHome v-if="selectedMenu === 'home'" />
+  <InnerRelatedMenuMember v-if="selectedMenu === 'member'" />
 </template>
 
 
@@ -48,9 +42,11 @@ export default {
 <style lang="scss">
 .innerMenu {
   background: #32446e !important;
+  position: static !important;
+  height: 100% !important;
 
   .selected-item {
-    background-color: #7280A2; /* 선택된 항목의 배경 색상 */
+    background-color: #7280a2; /* 선택된 항목의 배경 색상 */
   }
 }
 </style>

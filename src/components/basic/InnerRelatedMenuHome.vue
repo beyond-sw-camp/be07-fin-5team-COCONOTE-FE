@@ -1,5 +1,5 @@
 <template>
-  <v-navigation-drawer permanent class="innerSubMenu" :width="220">
+  <v-navigation-drawer permanent class="innerSubMenu" :absolute="false">
     <h1>코코노트 동아리</h1>
     <v-list>
       <v-list-subheader class="section-title">
@@ -9,7 +9,7 @@
         title="공지채널"
         value="1"
         @click="goToThread('1', '공지채널')"
-        :class="{ 'selected-item': selectedMenuId === '1' }"
+        :class="{ 'selected-item': selectedMenuId == '1' }"
         class="channel-item"
       ></v-list-item>
 
@@ -17,14 +17,14 @@
         title="채널2"
         value="2"
         @click="goToThread('2', '채널2')"
-        :class="{ 'selected-item': selectedMenuId === '2' }"
+        :class="{ 'selected-item': selectedMenuId == '2' }"
       ></v-list-item>
 
       <v-list-item
         title="채널3"
         value="3"
         @click="goToThread('3', '채널3')"
-        :class="{ 'selected-item': selectedMenuId === '3' }"
+        :class="{ 'selected-item': selectedMenuId == '3' }"
       ></v-list-item>
     </v-list>
   </v-navigation-drawer>
@@ -53,9 +53,8 @@ export default {
       console.log("@@@@@", channelValue, channelName);
       this.setChannelInfoActions(channelValue); // Vuex store에 업데이트
       this.setChannelNameInfoActions(channelName); // Vuex store에 업데이트
-      this.$router.push(`/thread/view/${channelValue}`);
-
-      console.log("@@@@@@@@@@@@", this.$store.getters.getChannelId);
+      this.selectedMenuId = channelValue;
+      this.$router.push(`/channel/view/${channelValue}`);
     },
   },
 };

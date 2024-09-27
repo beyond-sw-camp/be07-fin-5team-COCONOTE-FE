@@ -3,6 +3,7 @@ import {createRouter, createWebHistory} from 'vue-router';
 import HomePage from '@/views/HomePage.vue';
 import { canvasRouter } from './canvasRouter';
 import { threadRouter } from '@/router/threadRouter'
+import { channelRouter } from '@/router/channelRouter'
 
 const routes = [
     {
@@ -12,6 +13,7 @@ const routes = [
         name: 'HOME',
         component: HomePage
     },
+    ...channelRouter,
     ...canvasRouter,
     ...threadRouter,
 ]
