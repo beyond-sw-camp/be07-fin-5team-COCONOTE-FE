@@ -23,6 +23,8 @@
         <v-col cols="12" class="CommonTopContainer">
           <CommonTopMenu />
         </v-col>
+      </v-row>
+      <v-row no-gutters>
         <v-col cols="2">
           <div class="d-flex innerMenuContainer">
             <InnerMenu />
@@ -60,7 +62,7 @@ export default {
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: flex-start;
-  height: calc(100% - 40px);
+  height: 100%;
   > * {
     padding: 0 !important;
   }
