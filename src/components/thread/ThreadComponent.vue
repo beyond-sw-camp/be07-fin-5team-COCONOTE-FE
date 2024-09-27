@@ -79,6 +79,7 @@ export default {
       isLastPage: false,
       files: null,
       fileList: [],
+      reqFiles: [],
     };
   },
   created() {
@@ -101,8 +102,10 @@ export default {
   methods: {
     fileUpdate(){
         this.files.forEach(file => this.fileList.push({...file, imageUrl: URL.createObjectURL(file)}));
-        console.log("files: ", this.files);
-        console.log("imageUrl: ", this.imageUrl);
+        console.log("files: ", this.fileList);
+        this.fileList.forEach(file => this.reqFiles.push({fileName:file.name, fileSize:file.size}))
+        console.log("reqFiles: ", this.reqFiles);
+        
     },
     async getMessageList() {
       try {
