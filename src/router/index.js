@@ -4,6 +4,7 @@ import HomePage from '@/views/HomePage.vue';
 import { canvasRouter } from './canvasRouter';
 import { threadRouter } from '@/router/threadRouter'
 import { channelRouter } from '@/router/channelRouter'
+import SearchComponent from '@/components/test/SearchComponent.vue';
 
 const routes = [
     {
@@ -12,6 +13,11 @@ const routes = [
         path: '/',
         name: 'HOME',
         component: HomePage
+    },
+    {
+        path: '/search',
+        name: 'SEARCH',
+        component: SearchComponent
     },
     ...channelRouter,
     ...canvasRouter,
