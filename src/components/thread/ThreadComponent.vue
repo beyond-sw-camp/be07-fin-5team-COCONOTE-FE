@@ -1,8 +1,5 @@
 <template>
   <div class="container">
-    <div>
-      <h2>{{ room.name }}</h2>
-    </div>
     <ul class="list-group" ref="messageList" id="list-group">
       <li
         class="list-group-item"
@@ -24,18 +21,25 @@
         />
       </li>
     </ul>
+    
     <div class="input-group">
-      <div class="input-group-prepend">
-        <label class="input-group-text">내용</label>
+      <div class="image-group">
+        <div v-for="(file, index) in fileList" :key="index">
+          <img :src="file.imageUrl" alt="image" style="height: 120px; width: 120px; object-fit: cover;">
+        </div>
       </div>
-      <input
-        type="text"
-        class="form-control"
-        v-model="message"
-        v-on:keypress.enter="sendMessage"
-      />
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="sendMessage">보내기</button>
+        
+      <div class="text-group">
+        <v-file-input v-model="files" @change="fileUpdate" multiple hide-input></v-file-input>
+        <input
+          type="text"
+          class="form-control"
+          v-model="message"
+          v-on:keypress.enter="sendMessage"
+        />
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="button" @click="sendMessage" :disabled="!message">보내기</button>
+        </div>
       </div>
     </div>
   </div>
@@ -73,6 +77,8 @@ export default {
       currentPage: 0,
       isLoading: false,
       isLastPage: false,
+      files: null,
+      fileList: [],
     };
   },
   created() {
@@ -93,6 +99,11 @@ export default {
   },
   computed: {},
   methods: {
+    fileUpdate(){
+        this.files.forEach(file => this.fileList.push({...file, imageUrl: URL.createObjectURL(file)}));
+        console.log("files: ", this.files);
+        console.log("imageUrl: ", this.imageUrl);
+    },
     async getMessageList() {
       try {
         let params = {
@@ -265,15 +276,26 @@ export default {
 .list-group {
   flex-grow: 1; /* 리스트가 가능한 공간을 모두 차지 */
   overflow-y: auto; /* 세로 스크롤 가능 */
-  max-height: calc(100vh - 300px);
+  max-height: calc(100vh - 240px);
 }
 
 .input-group {
-  height: 50px;
   position: sticky;
   bottom: 0; /* 하단에 고정 */
   background-color: white; /* 배경색 설정 */
-  padding: 10px; /* 여백 추가 */
   z-index: 1; /* 리스트 위에 표시되도록 */
+  border: 1px solid;
+  margin-right: 24px;
+}
+.image-group {
+  display: flex;
+  flex-direction: row;
+}
+.text-group {
+  display: flex;
+  flex-direction: row;
+}
+.form-control {
+    width: 100%;
 }
 </style>
