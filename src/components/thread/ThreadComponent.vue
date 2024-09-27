@@ -18,7 +18,7 @@
           :id="message.id"
           :image="message.image"
           :nickName="message.memberName"
-          :createdTime="message.createdTime"
+          :createdTime="this.getTime(message.createdTime)"
           :content="message.content"
           :files="message.files"
         />
