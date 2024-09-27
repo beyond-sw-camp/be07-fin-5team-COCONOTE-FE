@@ -4,7 +4,10 @@
 ```
 npm install
 ```
-
+## sass-loader install
+```
+npm install sass sass-loader
+```
 ### Compiles and hot-reloads for development
 ```
 npm run serve
