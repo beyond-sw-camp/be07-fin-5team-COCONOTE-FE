@@ -2,7 +2,7 @@
   <v-navigation-drawer permanent class="innerSubMenu" :width="220">
     <h1>코코노트 동아리</h1>
     <v-list>
-      <v-list-subheader class="section-title"> 
+      <v-list-subheader class="section-title">
         <v-icon icon="mdi-menu-right" /> Group
       </v-list-subheader>
       <v-list-item
@@ -23,13 +23,12 @@
       <v-list-item
         title="채널3"
         value="3"
-        @click="goToThread('3','채널3')"
+        @click="goToThread('3', '채널3')"
         :class="{ 'selected-item': selectedMenuId === '3' }"
       ></v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>
-
 
 <script>
 import { mapActions } from "vuex";
@@ -39,8 +38,7 @@ export default {
   components: {},
   created() {
     this.selectedMenuId = this.$store.getters.getChannelId;
-    this.selectedMenuId =
-      this.selectedMenuId != null ? this.selectedMenuId : "l"; // 기본값으로 일단 1번 선택
+    this.selectedMenuId = this.selectedMenuId != null ? this.selectedMenuId : "l"; // 기본값으로 일단 1번 선택
     console.log("초기 채널 아이디 >> ", this.selectedMenuId);
   },
   data() {
@@ -50,11 +48,12 @@ export default {
     };
   },
   methods: {
-    ...mapActions(["setChannelInfoActions"]),
+    ...mapActions(["setChannelInfoActions", "setChannelNameInfoActions"]),
     goToThread(channelValue, channelName) {
+      console.log("@@@@@", channelValue, channelName);
       this.setChannelInfoActions(channelValue); // Vuex store에 업데이트
-      this.setChannelNameInfo(channelName); // Vuex store에 업데이트
-      this.$router.push(`/${channelValue}/thread`);
+      this.setChannelNameInfoActions(channelName); // Vuex store에 업데이트
+      this.$router.push(`/thread/view/${channelValue}`);
 
       console.log("@@@@@@@@@@@@", this.$store.getters.getChannelId);
     },
