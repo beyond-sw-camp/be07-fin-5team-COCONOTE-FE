@@ -1,19 +1,22 @@
 <template>
   <v-app>
-    <h1>캔버스 테스트!!!</h1>
-    <hr />
-    <CanvasListComponent />
-    <hr />
-    <CanvasDetailComponent />
+    <ChannelCommonMenu />
+    <h1>canvas View Test</h1>
+    <div>
+      <CanvasListComponent />
+      <CanvasDetailComponent />
+    </div>
   </v-app>
 </template>
 
 <script>
+import ChannelCommonMenu from "@/components/basic/ChannelCommonMenu.vue";
 import CanvasListComponent from "@/components/canvas/CanvasListComponent.vue";
 import CanvasDetailComponent from "@/components/canvas/CanvasDetailComponent.vue";
 
 export default {
   components: {
+    ChannelCommonMenu,
     CanvasListComponent,
     CanvasDetailComponent,
   },

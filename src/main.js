@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 // 기본 폰트 pretendard
 import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
-import '@/assets/css/global.css';
+import '@/assets/css/global.scss';
 
 import router from '@/router/index.js';
 import vuetify from './plugins/vuetify';

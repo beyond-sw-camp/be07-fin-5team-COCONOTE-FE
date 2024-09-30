@@ -1,9 +1,9 @@
 import {createStore} from 'vuex';
-// import user from './user';
+import channel from './channel';
 
 const store = createStore({
     modules:{
-        // user
+        channel
     }
 });
 
