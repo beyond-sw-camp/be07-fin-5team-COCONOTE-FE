@@ -1,8 +1,17 @@
 <template>
-  <v-app>
+  <div>
     <h1>canvas Detail Test</h1>
     <CanvasDetailComponent />
-  </v-app>
+    <h1>Tiptap</h1>
+    <div>
+      
+
+      <div class="output-group">
+        <label>Content</label>
+        <code>{{ content }}</code>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -13,7 +22,9 @@ export default {
     CanvasDetailComponent,
   },
   data() {
-    return {};
+    return {
+      content: '<p>A Vue.js wrapper component for Tiptap to use <code>v-model</code>.</p>',
+    };
   },
   computed: {},
   created() {},
