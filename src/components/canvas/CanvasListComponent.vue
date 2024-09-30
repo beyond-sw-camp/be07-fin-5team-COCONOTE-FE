@@ -22,7 +22,7 @@
       <input
         type="text"
         class="form-control"
-        v-model="room_name"
+        v-model="canvasName"
         @keyup.enter="createRoom"
       />
       <div class="input-group-append">
@@ -43,48 +43,42 @@ export default {
 
   data() {
     return {
-      room_name: "",
+      canvasName: "",
       channelId: 1,
       chatrooms: [],
     };
   },
-
   methods: {
     findAllRoom() {
       axios
-        .get(
-          `${process.env.VUE_APP_API_BASE_URL}/canvas/${this.channelId}/list`
-        )
+        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${this.channelId}/list`)
         .then((response) => {
           this.chatrooms = response.data.result.content;
         });
     },
-
     createRoom() {
-      if (this.room_name === "") {
-        alert("방 제목을 입력해 주십시요.");
+      if (this.canvasName === "") {
+        alert("캔버스 제목을 입력해 주십시요.");
         return;
+      } else {
+        const params = {
+          title: this.canvasName,
+          parentCanvasId: null,
+          channelId: 1,
+        };
+        axios
+          .post(`${process.env.VUE_APP_API_BASE_URL}/canvas/create`, params)
+          .then((response) => {
+            alert(response.data.title + "방 개설에 성공하였습니다.");
+            this.canvasName = "";
+            this.findAllRoom();
+          })
+          .catch(() => {
+            alert("채팅방 개설에 실패하였습니다.");
+          });
       }
-
-      const params = {
-        title: this.room_name,
-        parentCanvasId: null,
-        channelId: 1,
-      };
-
-      axios
-        .post(`${process.env.VUE_APP_API_BASE_URL}/canvas/create`, params)
-        .then((response) => {
-          alert(response.data.title + "방 개설에 성공하였습니다.");
-          this.room_name = "";
-          this.findAllRoom();
-        })
-        .catch(() => {
-          alert("채팅방 개설에 실패하였습니다.");
-        });
     },
-
-    changeCanvasId(roomId) {
+    changeCanvasId(canvasId) {
       const sender = prompt("대화명을 입력해 주세요.");
       if (sender) {
         localStorage.setItem("wschat.sender", sender);
