@@ -15,9 +15,10 @@ const routes = [
         component: HomePage
     },
     {
-        path: '/search',
+        path: '/workspace/:workspaceId/search',
         name: 'SEARCH',
-        component: SearchComponent
+        component: SearchComponent,
+        props: true  // workspaceId를 props로 전달하기 위해 설정
     },
     ...channelRouter,
     ...canvasRouter,
