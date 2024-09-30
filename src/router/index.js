@@ -23,6 +23,8 @@ const routes = [
         name: 'SEARCH',
         component: SearchComponent,
         props: true  // workspaceId를 props로 전달하기 위해 설정
+    },
+    {
         path: '/login',
         name: 'LOGIN',
         component: LoginPage,
