@@ -1,0 +1,52 @@
+
+name: deploy to aws s3
+# 1. 트리거 생성(main브랜치에 push 될때 현재 스크립트 실행 트리거 발동)
+on:
+  push:
+    branches:
+      - develop
+# 워크플로우는 하나 이상의 작업(job)으로 구성, 여기서는 하나의 작업만을 정의 (job의 이름 은 사용자 맘대로)
+jobs:
+  build-and-deploy:
+    runs-on : ubuntu-latest
+    # 각 작업은  여러 step(단계)로 구성
+    steps:
+    # actions 는 github에서 제공되는 공식 워크플로우
+    # chekout은 현재 repo의 main브랜치 소스코드를 카피
+      - name: source code checkout
+        uses: actions/checkout@v2
+# 2.  노드 설치
+      - name: setup node jobs
+        uses: actions/setup-node@v2
+        with: 
+          node-version: '20'
+
+      - name: Create .env file
+        run: |
+          echo "VUE_APP_API_BASE_URL=${{ secrets.VUE_APP_API_BASE_URL }}" >> .env
+  
+# 3. npm install
+      - name: npm install
+        working-directory: .
+        run: npm install
+# 4. npm build
+      - name: npm buildwer
+        working-directory: .
+        run: npm run build
+      
+      - name: setup aws cli
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACESS_KEY}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET}}
+          aws-region: ap-northeast-2
+
+      - name: clear s3 bucket
+        run: aws s3 rm s3://coconote.site/ --recursive
+
+      - name: upload file in s3 bucket
+        run: aws s3 cp ./dist s3://coconote.site/ --recursive
+      
+
+      - name: invalidate cloudfront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{secrets.CLOUDFRONT_DISTRIBUTION_ID}} --paths "/*"
