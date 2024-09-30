@@ -65,6 +65,7 @@ export default {
   },
   data() {
     return {
+      workspaceId: 2,
       roomId: "",
       room: { name: "sehotest" },
       sender: 1,
@@ -113,6 +114,7 @@ export default {
           size: this.pageSize,
           page: this.currentPage,
         };
+
         const response = await axios.get(
           `http://localhost:8080/api/v1/thread/list/${this.id}`,
           { params }
@@ -172,14 +174,16 @@ export default {
       }
     },
     sendMessage() {
+      const authToken = localStorage.getItem('accessToken');
       this.ws.send(
         "/pub/chat/message",
-        {},
+        {Authorization: authToken},
         JSON.stringify({
           type: "TALK",
           channelId: this.roomId,
           senderId: this.sender,
           content: this.message,
+          workspaceId: this.workspaceId,
         })
       );
       this.message = "";
@@ -199,8 +203,9 @@ export default {
       this.sock = new SockJS(`http://localhost:8080/api/v1/ws-stomp`);
       this.ws = Stomp.over(this.sock);
 
+      const authToken = localStorage.getItem('accessToken');
       this.ws.connect(
-        {},
+        {Authorization: authToken},
         (frame) => {
           console.log("frame: ", frame);
           this.ws.subscribe(`/sub/chat/room/${this.roomId}`, (message) => {
@@ -209,11 +214,12 @@ export default {
           });
           this.ws.send(
             "/pub/chat/message",
-            {},
+            {Authorization: authToken},
             JSON.stringify({
               type: "ENTER",
               channelId: this.roomId,
               senderId: this.sender,
+              workspaceId: this.workspaceId,
             })
           );
         },
