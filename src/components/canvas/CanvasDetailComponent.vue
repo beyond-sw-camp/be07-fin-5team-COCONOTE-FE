@@ -28,7 +28,6 @@
 <script>
 import axios from "axios";
 import SockJS from "sockjs-client";
-// import Stomp from "stompjs";
 import { Stomp } from "@stomp/stompjs";
 
 export default {
