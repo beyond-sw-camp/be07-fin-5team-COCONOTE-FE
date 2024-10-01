@@ -98,15 +98,28 @@ export default {
   beforeUnmount() {
     // window.removeEventListener('scroll', this.scrollPagination)
     this.$refs.messageList.removeEventListener("scroll", this.debouncedScrollPagination);
+    
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // 구독 해제
+      console.log("WebSocket subscription unsubscribed.");
+    }
+    if (this.ws) {
+      this.ws.disconnect(() => {
+        console.log("WebSocket connection closed.");
+      });
+    }
   },
   computed: {},
   methods: {
     fileUpdate(){
-        this.files.forEach(file => this.fileList.push({...file, imageUrl: URL.createObjectURL(file)}));
-        console.log("files: ", this.fileList);
+        this.files.forEach(file => {
+          this.fileList.push({
+            name: file.name,
+            size: file.size,
+            type: file.type, 
+            imageUrl: URL.createObjectURL(file)})
+        });
         this.fileList.forEach(file => this.reqFiles.push({fileName:file.name, fileSize:file.size}))
-        console.log("reqFiles: ", this.reqFiles);
-        
     },
     async getMessageList() {
       try {
@@ -116,7 +129,7 @@ export default {
         };
 
         const response = await axios.get(
-          `http://localhost:8080/api/v1/thread/list/${this.id}`,
+          `${process.env.VUE_APP_API_BASE_URL}/thread/list/${this.id}`,
           { params }
         );
         this.currentPage++;
@@ -173,8 +186,18 @@ export default {
         }, 100);
       }
     },
+    async getPresignedURL(){
+      console.log("here!!!!");
+      
+      const response = await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/files/presigned-urls`, this.reqFiles
+        );
+        console.log(response.data);
+        
+    },
     sendMessage() {
       const authToken = localStorage.getItem('accessToken');
+      if(this.reqFiles.length>0) this.getPresignedURL();
       this.ws.send(
         "/pub/chat/message",
         {Authorization: authToken},
@@ -200,7 +223,7 @@ export default {
       this.scrollToBottom();
     },
     connect() {
-      this.sock = new SockJS(`http://localhost:8080/api/v1/ws-stomp`);
+      this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
       this.ws = Stomp.over(this.sock);
 
       const authToken = localStorage.getItem('accessToken');
@@ -228,7 +251,7 @@ export default {
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
               console.log("connection reconnect");
-              this.sock = new SockJS(`http://localhost:8080/api/v1/ws-stomp`);
+              this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
               this.ws = Stomp.over(this.sock);
               this.connect();
             }, 10 * 1000);
