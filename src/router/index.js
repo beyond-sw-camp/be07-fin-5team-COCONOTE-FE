@@ -8,6 +8,7 @@ import OAuth2Success from '@/views/OAuth2Success.vue'; // OAuth2 성공 페이�
 import { canvasRouter } from './canvasRouter';
 import { threadRouter } from '@/router/threadRouter'
 import { channelRouter } from '@/router/channelRouter'
+import { driveRouter } from '@/router/driveRouter'
 import SearchComponent from '@/components/test/SearchComponent.vue';
 
 const routes = [
@@ -37,6 +38,7 @@ const routes = [
     ...channelRouter,
     ...canvasRouter,
     ...threadRouter,
+    ...driveRouter
 ]
 
 
