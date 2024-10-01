@@ -25,7 +25,9 @@
     <div class="input-group">
       <div class="image-group">
         <div v-for="(file, index) in fileList" :key="index">
+          <button type="button" @click="deleteImage(index)">삭제</button>
           <img :src="file.imageUrl" alt="image" style="height: 120px; width: 120px; object-fit: cover;">
+          <p class="custom-contents">{{file.name}}</p>
         </div>
       </div>
         
@@ -80,7 +82,6 @@ export default {
       isLastPage: false,
       files: null,
       fileList: [],
-      reqFiles: [],
     };
   },
   created() {
@@ -119,7 +120,7 @@ export default {
             type: file.type, 
             imageUrl: URL.createObjectURL(file)})
         });
-        this.fileList.forEach(file => this.reqFiles.push({fileName:file.name, fileSize:file.size}))
+        
     },
     async getMessageList() {
       try {
@@ -187,17 +188,19 @@ export default {
       }
     },
     async getPresignedURL(){
-      console.log("here!!!!");
-      
+      const reqFiles = this.fileList.map(file => ({fileName:file.name, fileSize:file.size}))
       const response = await axios.post(
-          `${process.env.VUE_APP_API_BASE_URL}/files/presigned-urls`, this.reqFiles
+          `${process.env.VUE_APP_API_BASE_URL}/files/presigned-urls`, reqFiles
         );
         console.log(response.data);
         
     },
+    deleteImage(index){
+      this.fileList.splice(index, 1);
+    },
     sendMessage() {
       const authToken = localStorage.getItem('accessToken');
-      if(this.reqFiles.length>0) this.getPresignedURL();
+      if(this.fileList.length>0) this.getPresignedURL();
       this.ws.send(
         "/pub/chat/message",
         {Authorization: authToken},
@@ -322,6 +325,8 @@ export default {
 .image-group {
   display: flex;
   flex-direction: row;
+  width: 120px;
+  max-height: 180px;
 }
 .text-group {
   display: flex;
@@ -329,5 +334,11 @@ export default {
 }
 .form-control {
     width: 100%;
+}
+.custom-contents{
+  max-width: 120px; /* 제목의 최대 너비를 설정 */
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+  text-overflow: ellipsis !important; /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
+  white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
 }
 </style>
