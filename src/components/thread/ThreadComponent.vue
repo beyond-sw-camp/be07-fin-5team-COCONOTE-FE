@@ -25,7 +25,9 @@
     <div class="input-group">
       <div class="image-group">
         <div v-for="(file, index) in fileList" :key="index">
+          <button type="button" @click="deleteImage(index)">삭제</button>
           <img :src="file.imageUrl" alt="image" style="height: 120px; width: 120px; object-fit: cover;">
+          <p class="custom-contents">{{file.name}}</p>
         </div>
       </div>
         
@@ -65,6 +67,7 @@ export default {
   },
   data() {
     return {
+      workspaceId: 2,
       roomId: "",
       room: { name: "sehotest" },
       sender: 1,
@@ -79,7 +82,6 @@ export default {
       isLastPage: false,
       files: null,
       fileList: [],
-      reqFiles: [],
     };
   },
   created() {
@@ -97,14 +99,27 @@ export default {
   beforeUnmount() {
     // window.removeEventListener('scroll', this.scrollPagination)
     this.$refs.messageList.removeEventListener("scroll", this.debouncedScrollPagination);
+    
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // 구독 해제
+      console.log("WebSocket subscription unsubscribed.");
+    }
+    if (this.ws) {
+      this.ws.disconnect(() => {
+        console.log("WebSocket connection closed.");
+      });
+    }
   },
   computed: {},
   methods: {
     fileUpdate(){
-        this.files.forEach(file => this.fileList.push({...file, imageUrl: URL.createObjectURL(file)}));
-        console.log("files: ", this.fileList);
-        this.fileList.forEach(file => this.reqFiles.push({fileName:file.name, fileSize:file.size}))
-        console.log("reqFiles: ", this.reqFiles);
+        this.files.forEach(file => {
+          this.fileList.push({
+            name: file.name,
+            size: file.size,
+            type: file.type, 
+            imageUrl: URL.createObjectURL(file)})
+        });
         
     },
     async getMessageList() {
@@ -113,8 +128,9 @@ export default {
           size: this.pageSize,
           page: this.currentPage,
         };
+
         const response = await axios.get(
-          `http://localhost:8080/api/v1/thread/list/${this.id}`,
+          `${process.env.VUE_APP_API_BASE_URL}/thread/list/${this.id}`,
           { params }
         );
         this.currentPage++;
@@ -171,15 +187,29 @@ export default {
         }, 100);
       }
     },
+    async getPresignedURL(){
+      const reqFiles = this.fileList.map(file => ({fileName:file.name, fileSize:file.size}))
+      const response = await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/files/presigned-urls`, reqFiles
+        );
+        console.log(response.data);
+        
+    },
+    deleteImage(index){
+      this.fileList.splice(index, 1);
+    },
     sendMessage() {
+      const authToken = localStorage.getItem('accessToken');
+      if(this.fileList.length>0) this.getPresignedURL();
       this.ws.send(
         "/pub/chat/message",
-        {},
+        {Authorization: authToken},
         JSON.stringify({
           type: "TALK",
           channelId: this.roomId,
           senderId: this.sender,
           content: this.message,
+          workspaceId: this.workspaceId,
         })
       );
       this.message = "";
@@ -196,11 +226,12 @@ export default {
       this.scrollToBottom();
     },
     connect() {
-      this.sock = new SockJS(`http://localhost:8080/api/v1/ws-stomp`);
+      this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
       this.ws = Stomp.over(this.sock);
 
+      const authToken = localStorage.getItem('accessToken');
       this.ws.connect(
-        {},
+        {Authorization: authToken},
         (frame) => {
           console.log("frame: ", frame);
           this.ws.subscribe(`/sub/chat/room/${this.roomId}`, (message) => {
@@ -209,11 +240,12 @@ export default {
           });
           this.ws.send(
             "/pub/chat/message",
-            {},
+            {Authorization: authToken},
             JSON.stringify({
               type: "ENTER",
               channelId: this.roomId,
               senderId: this.sender,
+              workspaceId: this.workspaceId,
             })
           );
         },
@@ -222,7 +254,7 @@ export default {
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
               console.log("connection reconnect");
-              this.sock = new SockJS(`http://localhost:8080/api/v1/ws-stomp`);
+              this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
               this.ws = Stomp.over(this.sock);
               this.connect();
             }, 10 * 1000);
@@ -293,6 +325,8 @@ export default {
 .image-group {
   display: flex;
   flex-direction: row;
+  width: 120px;
+  max-height: 180px;
 }
 .text-group {
   display: flex;
@@ -300,5 +334,11 @@ export default {
 }
 .form-control {
     width: 100%;
+}
+.custom-contents{
+  max-width: 120px; /* 제목의 최대 너비를 설정 */
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+  text-overflow: ellipsis !important; /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
+  white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
 }
 </style>
