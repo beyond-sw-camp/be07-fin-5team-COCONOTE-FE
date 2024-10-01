@@ -15,7 +15,8 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     const accessToken = localStorage.getItem('accessToken');
-    if (accessToken) {
+    // S3 URL이 아닌 경우에만 Authorization 헤더 추가
+    if (accessToken && !config.url.includes('amazonaws.com')) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
     return config;
@@ -23,7 +24,7 @@ apiClient.interceptors.request.use(
   (error) => {
     return Promise.reject(error);
   }
-)
+);
 
 // 응답 인터셉터 (토큰 만료 시 자동 갱신)
 apiClient.interceptors.response.use((response) => {
