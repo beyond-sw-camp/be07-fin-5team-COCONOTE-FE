@@ -2,10 +2,13 @@
   <div class="drive-container">
     <!-- 현재 경로 표시 -->
     <div class="breadcrumb">
-      <span v-for="(folder, index) in breadcrumb" :key="folder.folderId">
-        <span @click="navigateToFolder(folder.folderId)" class="breadcrumb-item">
-          {{ folder.folderName }}
-        </span>
+      <span v-for="(folder, index) in breadcrumb" :key="folder.folderId"
+        class="breadcrumb-item"
+        draggable="true"
+        @dragover.prevent
+        @drop="onDrop($event, folder.folderId)"
+        @click="navigateToFolder(folder.folderId)">
+        {{ folder.folderName }}
         <span v-if="index !== breadcrumb.length - 1"> / </span> <!-- 마지막 폴더에는 '/' 표시 안함 -->
       </span>
     </div>
