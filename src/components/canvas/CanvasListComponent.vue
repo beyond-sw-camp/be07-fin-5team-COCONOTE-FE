@@ -8,6 +8,16 @@
     >
       {{ item.title }}
     </v-list-item>
+    <v-list-item class="list-create">
+      <v-text-field
+        color="primary"
+        density="compact"
+        class="form-control"
+        variant="underlined"
+        v-model="canvasName"
+        @keyup.enter="createCanvas"
+      ></v-text-field>
+    </v-list-item>
   </v-list>
   <div class="container" v-cloak>
     <!-- <div class="row">
@@ -19,16 +29,7 @@
       <div class="input-group-prepend">
         <label class="input-group-text">방제목</label>
       </div>
-      <input
-        type="text"
-        class="form-control"
-        v-model="canvasName"
-        @keyup.enter="createRoom"
-      />
       <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="createRoom">
-          채팅방 개설
-        </button>
       </div>
     </div> -->
   </div>
@@ -51,12 +52,14 @@ export default {
   methods: {
     findAllRoom() {
       axios
-        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${this.channelId}/list`)
+        .get(
+          `${process.env.VUE_APP_API_BASE_URL}/canvas/${this.channelId}/list`
+        )
         .then((response) => {
           this.chatrooms = response.data.result.content;
         });
     },
-    createRoom() {
+    createCanvas() {
       if (this.canvasName === "") {
         alert("캔버스 제목을 입력해 주십시요.");
         return;

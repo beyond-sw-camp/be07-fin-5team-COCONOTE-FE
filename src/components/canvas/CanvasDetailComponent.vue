@@ -1,12 +1,22 @@
 <template>
   <div class="canvasDetailComponentContainer">
-    <h2>{{ room.title }}</h2>
-    <div
-      contenteditable="true"
-      @input="onCanvasTitleInput"
-      :innerHTML="editableContent"
-    ></div>
-    <p>현재 값: {{ editableContent }}</p>
+    <!-- <h2>{{ room.title }}</h2> -->
+    <v-row class="canvasTitleContainer">
+      <v-col class="p-0">
+        <v-text-field
+          color="primary"
+          density="compact"
+          class="canvasTitle"
+          variant="plain"
+          v-model="room.title"
+          @keyup.enter="changeCanvasName"
+        ></v-text-field>
+      </v-col>
+      <v-col class="p-0" style="text-align:right;">
+        <v-icon icon="mdi-delete" @click="deleteCanvas" />
+      </v-col>
+    </v-row>
+    <hr />
     <div>
       <TipTabEditor
         v-if="this.editorContent != null"
@@ -52,7 +62,6 @@ export default {
       editorContent: null,
       parentUpdateEditorContent: "초기 값",
 
-      editableContent: "이곳을 수정할 수 있습니다.",
       recentKeyboardKey: null,
     };
   },
@@ -137,7 +146,9 @@ export default {
         // console.log("blockJson", blockJson);
         if (this.activeBlockId == blockJson.feId) {
           // if (this.member == blockJson.member) {
-          console.log("현 focus 부분이랑 같은 block 수정 중인 부분.. => block Id 동일함");
+          console.log(
+            "현 focus 부분이랑 같은 block 수정 중인 부분.. => block Id 동일함"
+          );
         } else {
           console.log("다른 block Id 수정 중!~");
           this.parentUpdateEditorContent = blockJson;
@@ -174,7 +185,9 @@ export default {
         () => {
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
-              this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+              this.sock = new SockJS(
+                `${process.env.VUE_APP_API_BASE_URL}/ws-stomp`
+              );
               this.ws = Stomp.over(this.sock);
               this.connect();
             }, 10 * 1000);
@@ -182,15 +195,20 @@ export default {
         }
       );
       // block 용 websocket
-      this.sockBlock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+      this.sockBlock = new SockJS(
+        `${process.env.VUE_APP_API_BASE_URL}/ws-stomp`
+      );
       this.wsBlock = Stomp.over(this.sockBlock);
       this.wsBlock.connect(
         {},
         () => {
-          this.wsBlock.subscribe(`/sub/block/room/${this.roomId}`, (message) => {
-            const recv = JSON.parse(message.body);
-            this.recvMessage(recv);
-          });
+          this.wsBlock.subscribe(
+            `/sub/block/room/${this.roomId}`,
+            (message) => {
+              const recv = JSON.parse(message.body);
+              this.recvMessage(recv);
+            }
+          );
           this.wsBlock.send(
             `/pub/block/message`,
             {},
@@ -204,7 +222,9 @@ export default {
         () => {
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
-              this.sockBlock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
+              this.sockBlock = new SockJS(
+                `${process.env.VUE_APP_API_BASE_URL}/ws-stomp`
+              );
               this.wsBlock = Stomp.over(this.sockBlock);
               this.connect();
             }, 10 * 1000);
@@ -258,7 +278,9 @@ export default {
       this.sendMessage();
     },
     checkBlockMethod(targetBlockFeId) {
-      const found = this.defaultBlockFeIds.find((element) => element == targetBlockFeId);
+      const found = this.defaultBlockFeIds.find(
+        (element) => element == targetBlockFeId
+      );
 
       console.error(
         `${this.recentKeyboardKey}, ${this.lastBlockId}, ${targetBlockFeId}, ${this.lastBlockContent}`
@@ -286,9 +308,11 @@ export default {
       }
     },
 
-    onCanvasTitleInput(event) {
-      // 캔버스 title 변경 값
-      this.editableContent = event.target.innerHTML;
+    changeCanvasName() {
+      console.error(this.room.title);
+    },
+    deleteCanvas() {
+      console.log("canvas 삭제 예정");
     },
     onKeydown(event) {
       this.recentKeyboardKey = event.keyCode; // 누른 키 값을 저장
@@ -313,10 +337,22 @@ export default {
 };
 </script>
 
-<style scoped>
+<style lang="scss">
 .canvasDetailComponentContainer {
   display: flex;
   flex-direction: column;
   padding: 24px;
+  .canvasTitleContainer{
+    align-items: center;
+  }
+  .canvasTitle {
+    input {
+      font-size: 2em;
+      font-weight: bold;
+    }
+    .v-input__details {
+      display: none;
+    }
+  }
 }
 </style>
