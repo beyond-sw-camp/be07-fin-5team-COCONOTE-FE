@@ -9,7 +9,7 @@ import { canvasRouter } from './canvasRouter';
 import { threadRouter } from '@/router/threadRouter'
 import { channelRouter } from '@/router/channelRouter'
 import { driveRouter } from '@/router/driveRouter'
-import SearchComponent from '@/components/test/SearchComponent.vue';
+import SearchComponent from '@/components/search/SearchComponent.vue';
 
 const routes = [
     {
