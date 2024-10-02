@@ -7,7 +7,6 @@ import '@/assets/css/global.scss';
 import router from '@/router/index.js';
 import vuetify from './plugins/vuetify';
 import '@mdi/font/css/materialdesignicons.css';
-// import axios from 'axios';
 import store from './store/index.js';
 
 const app = createApp(App);

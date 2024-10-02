@@ -1,9 +1,7 @@
 <template>
   <div class="channelInsideContainer">
     <ChannelCommonMenu />
-    <div class="channelInsideContentWrap">
-      <ThreadComponent :id="this.id"/>
-    </div>
+    <ThreadComponent :id="this.id"/>
   </div>
 </template>
   

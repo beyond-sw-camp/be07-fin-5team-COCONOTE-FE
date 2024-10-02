@@ -12,10 +12,10 @@
 export default {
   methods: {
     loginWithGoogle() {
-      window.location.href = "http://localhost:8080/oauth2/authorization/google";
+      window.location.href = `${process.env.VUE_APP_BASE_URL}/oauth2/authorization/google`;
     },
     loginWithKakao() {
-      window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+      window.location.href = `${process.env.VUE_APP_BASE_URL}/oauth2/authorization/kakao`;
     },
   },
 };
