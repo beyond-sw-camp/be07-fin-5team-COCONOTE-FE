@@ -216,6 +216,7 @@ export default {
             file,
             imageUrl: URL.createObjectURL(file)})
         });
+        this.files = null;
     },
     async getMessageList() {
       try {
