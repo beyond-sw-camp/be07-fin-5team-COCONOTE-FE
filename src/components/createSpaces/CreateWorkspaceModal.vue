@@ -43,6 +43,7 @@ export default {
             }
             try {
                 await axios.post(`${process.env.VUE_APP_API_BASE_URL}/workspace/create`, body);
+
                 this.$emit('update:dialog', false);
             } catch(e) {
                 console.log(e);
