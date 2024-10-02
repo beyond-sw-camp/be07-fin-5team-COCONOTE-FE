@@ -17,21 +17,11 @@ export default {
       return this.$store.getters.getWorkspaceName;
     },
   },
-  components: {
-
-  },
   data() {
     return {
     };
   },
-  created() {
-    this.logWorkspaceInfo();
-  },
   methods: {
-    logWorkspaceInfo() {
-      console.log(this.$store.getters.getWorkspaceId); // getter 사용
-      console.log(this.$store.getters.getWorkspaceName);
-    }
   },
 };
 </script>

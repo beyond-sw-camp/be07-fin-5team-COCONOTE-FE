@@ -50,8 +50,7 @@ export default {
         `${process.env.VUE_APP_API_BASE_URL}/${this.workspaceId}/channel/first` // ⭐ 추후 API 수정
       );
 
-      console.log(response)
-      this.$router.push(`/channel/${response.data.result.channelId}`);
+      this.$router.push(`/channel/view/${response.data.result.channelId}`);
     },
     locationToHomeRouter() {
       this.$router.push(`/`);

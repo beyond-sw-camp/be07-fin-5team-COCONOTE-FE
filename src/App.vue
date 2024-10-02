@@ -56,9 +56,6 @@ export default {
   flex-wrap: nowrap;
   justify-content: flex-start;
   height: 100%;
-  > * {
-    padding: 0 !important;
-  }
 }
 .main-content {
   height: calc(100% - 40px);

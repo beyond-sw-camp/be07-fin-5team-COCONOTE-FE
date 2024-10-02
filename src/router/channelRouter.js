@@ -9,7 +9,7 @@ export const channelRouter = [
         props: true
     },  
     {
-        path: '/channel/view/:id',
+        path: '/channel/view/:channelId',
         name: 'ChannelView',
         component: ChannelView,
         props: true
