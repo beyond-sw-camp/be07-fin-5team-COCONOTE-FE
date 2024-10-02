@@ -2,17 +2,24 @@
   <div class="drive-container">
     <!-- 현재 경로 표시 -->
     <div class="breadcrumb">
-      <span v-for="(folder, index) in breadcrumb" :key="folder.folderId">
-        <span @click="navigateToFolder(folder.folderId)" class="breadcrumb-item">
-          {{ folder.folderName }}
-        </span>
-        <span v-if="index !== breadcrumb.length - 1"> / </span> <!-- 마지막 폴더에는 '/' 표시 안함 -->
+      <!-- 루트 경로로 드래그 앤 드롭 가능하게 설정 -->
+      <span @click="navigateToFolder(rootFolderId)" class="breadcrumb-item"
+        :class="{ active: currentFolderId === rootFolderId }" draggable="true" @dragover.prevent
+        @drop="onDrop($event, rootFolderId)">
+        루트
+      </span>
+
+      <span v-if="breadcrumb.length"> / </span>
+      <span v-for="(folder, index) in breadcrumb" :key="folder.folderId" class="breadcrumb-item" draggable="true"
+        @dragover.prevent @drop="onDrop($event, folder.folderId)" @click="navigateToFolder(folder.folderId)">
+        {{ folder.folderName }}
+        <span v-if="index !== breadcrumb.length - 1"> / </span>
       </span>
     </div>
 
     <!-- 뒤로 가기 버튼 -->
     <div class="toolbar">
-      <button @click="goBack" :disabled="!backButtonHistory.length">뒤로 가기</button>
+      <!-- <button @click="goBack" :disabled="!backButtonHistory.length || currentFolderId === rootFolderId">뒤로 가기</button> -->
       <button @click="createFolder">새 폴더</button>
       <button @click="refreshFolderList">새로고침</button>
       <input type="file" multiple @change="onFileChange" />
@@ -28,9 +35,11 @@
       </ul>
     </div>
 
+    <!-- 폴더 목록 (드래그 앤 드롭 적용) -->
     <div class="folder-list">
-      <div v-for="folder in folderList" :key="folder.folderId" class="folder-item"
-        @click="navigateToFolder(folder.folderId)">
+      <div v-for="folder in folderList" :key="folder.folderId" class="folder-item" draggable="true"
+        @dragstart="onDragStart($event, 'folder', folder.folderId)" @dragover.prevent
+        @drop="onDrop($event, folder.folderId)" @click="navigateToFolder(folder.folderId)">
         <i class="folder-icon">📁</i>
         <span>{{ folder.folderName }}</span>
         <button @click.stop="renameFolder(folder.folderId)">이름 변경</button>
@@ -40,7 +49,8 @@
     </div>
 
     <div class="file-list">
-      <div v-for="file in fileList" :key="file.fileId" class="file-item">
+      <div v-for="file in fileList" :key="file.fileId" class="file-item" draggable="true"
+        @dragstart="onDragStart($event, 'file', file.fileId)" @dragover.prevent @drop="onDrop($event, null)">
         <i class="file-icon">📄</i>
         <a :href="file.fileUrl" download>{{ file.fileName }}</a>
         <button @click.stop="deleteFile(file.fileId)">삭제</button>
@@ -60,10 +70,14 @@ export default {
       folderList: [],  // 현재 폴더 내 폴더 목록
       fileList: [],    // 현재 폴더 내 파일 목록
       currentFolderId: null, // 현재 탐색 중인 폴더 ID
-      backButtonHistory: [], // 이전 폴더 기록
+      rootFolderId: null,    // 루트 폴더 ID 저장
+      // backButtonHistory: [], // 이전 폴더 기록
       files: [], // 업로드할 파일 배열
       uploadProgress: [], // 파일 업로드 진행 상황
-      breadcrumb: [] // 폴더 경로를 저장하는 배열
+      breadcrumb: [], // 폴더 경로를 저장하는 배열
+      draggedItem: null, // 드래그 중인 아이템
+      draggedType: null, // 드래그 중인 타입 ('folder' 또는 'file')
+
     };
   },
   methods: {
@@ -72,6 +86,7 @@ export default {
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/channel/${channelId}/drive`);
         const data = response.data.result;
+        this.rootFolderId = data.nowFolderId; // 루트 폴더 설정
         this.currentFolderId = data.nowFolderId;
         this.folderList = data.folderListDto || [];
         this.fileList = data.fileListDto || [];
@@ -81,8 +96,61 @@ export default {
         alert('채널 드라이브 로딩 중 오류가 발생했습니다.');
       }
     },
+    // 드래그 시작 시 호출
+    onDragStart(event, type, id) {
+      this.draggedItem = id;
+      this.draggedType = type;
+      // event.dataTransfer.effectAllowed = 'move';
+    },
 
-    // 폴더 생성
+    // 드롭 시 호출
+    async onDrop(event, targetFolderId) {
+      if (targetFolderId === null || targetFolderId === undefined) {
+        alert('유효한 폴더 ID를 입력하세요.');
+        return;
+      }
+      // 폴더가 파일 안에 이동하지 않도록 처리
+      if (this.draggedType === 'folder' && !targetFolderId) {
+        alert('폴더는 파일 안에 이동할 수 없습니다.');
+        return;
+      }
+
+      // 자기 자신에게 드롭하지 못하도록 하기 (폴더와 파일 구분)
+      if (this.draggedType === 'folder' && this.draggedItem === targetFolderId) {
+        alert('같은 폴더로 이동할 수 없습니다.');
+        return;
+      }
+
+      if (this.draggedType === 'file' && this.currentFolderId === targetFolderId) {
+        alert('같은 위치로 파일을 이동할 수 없습니다.');
+        return;
+      }
+
+      try {
+        if (this.draggedType === 'file') {
+          // 파일을 targetFolderId로 이동
+          await this.moveFile(this.draggedItem, targetFolderId);
+          alert('파일이 성공적으로 이동되었습니다.');
+        } else if (this.draggedType === 'folder') {
+          // 폴더를 targetFolderId로 이동
+          await this.moveFolder(this.draggedItem, targetFolderId);
+          alert('폴더가 성공적으로 이동되었습니다.');
+        }
+      } catch (error) {
+        console.error(`${this.draggedType} 이동 실패:`, error);
+        alert(`${this.draggedType} 이동 중 오류가 발생했습니다.`);
+      }
+
+      // 드래그 상태 초기화
+      this.draggedItem = null;
+      this.draggedType = null;
+
+      // 목록 갱신
+      this.refreshFolderList();
+    },
+
+
+// 폴더 생성
     async createFolder() {
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/drive/folder/create`, {
@@ -97,15 +165,16 @@ export default {
       }
     },
 
-    // 뒤로 가기 기능
-    goBack() {
-      if (this.backButtonHistory.length) {
-        console.log('뒤로 가기:', this.backButtonHistory);
-        const previousFolderId = this.backButtonHistory.pop(); // 마지막 폴더 ID를 제거하고 이동
-        this.breadcrumb.pop(); // 경로에서 마지막 폴더 제거
-        this.navigateToFolder(previousFolderId, false); // false는 뒤로가기 이동 시 기록하지 않기 위함
-      }
-    },
+
+    // // 뒤로 가기 기능
+    // goBack() {
+    //   if (this.backButtonHistory.length && this.currentFolderId !== this.rootFolderId) {
+    //     console.log('뒤로 가기:', this.backButtonHistory);
+    //     const previousFolderId = this.backButtonHistory.pop(); // 마지막 폴더 ID를 제거하고 이동
+    //     this.breadcrumb.pop(); // 경로에서 마지막 폴더 제거
+    //     this.navigateToFolder(previousFolderId, false); // false는 뒤로가기 이동 시 기록하지 않기 위함
+    //   }
+    // },
 
     // 폴더 탐색
     // async refreshFolderList() {
@@ -123,7 +192,7 @@ export default {
     // 폴더/파일 목록 갱신
     async refreshFolderList() {
       try {
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/drive/folder/${this.currentFolderId || 1}`);
+        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/drive/folder/${this.currentFolderId}`);
         this.folderList = response.data.result.folderListDto || [];
         this.fileList = response.data.result.fileListDto || [];
       } catch (error) {
@@ -238,23 +307,50 @@ export default {
     },
 
     // 파일 이동
-    async moveFile(fileId) {
-      const newFolderId = prompt("이동할 폴더 ID를 입력하세요:");
-      if (!newFolderId) {
-        alert("유효한 폴더 ID를 입력하세요.");
-        return;
-      }
+    // async moveFile(fileId) {
+    //   const newFolderId = prompt("이동할 폴더 ID를 입력하세요:");
+    //   if (!newFolderId) {
+    //     alert("유효한 폴더 ID를 입력하세요.");
+    //     return;
+    //   }
 
+    //   try {
+    //     await axios.patch(`${process.env.VUE_APP_API_BASE_URL}/files/move`, {
+    //       fileId: fileId,
+    //       folderId: newFolderId
+    //     });
+    //     alert('파일이 성공적으로 이동되었습니다.');
+    //     this.refreshFolderList();
+    //   } catch (error) {
+    //     console.error('파일 이동 실패:', error);
+    //     alert('파일 이동 중 오류가 발생했습니다.');
+    //   }
+    // },
+    async moveFile(fileId, newFolderId) {
       try {
         await axios.patch(`${process.env.VUE_APP_API_BASE_URL}/files/move`, {
           fileId: fileId,
           folderId: newFolderId
         });
-        alert('파일이 성공적으로 이동되었습니다.');
-        this.refreshFolderList();
       } catch (error) {
         console.error('파일 이동 실패:', error);
-        alert('파일 이동 중 오류가 발생했습니다.');
+      }
+    },
+
+    // 폴더 이동
+    async moveFolder(folderId, newFolderId) {
+      try {
+        // MoveFolderReqDto에 맞는 형식으로 데이터를 전송
+        const response = await axios.patch(`${process.env.VUE_APP_API_BASE_URL}/drive/folder/move`, {
+          folderId: folderId,     // 이동할 폴더 ID
+          parentId: newFolderId   // 새로운 부모 폴더 ID
+        });
+        console.log(response.data.result.message);
+        alert('폴더가 성공적으로 이동되었습니다.');
+        this.refreshFolderList();
+      } catch (error) {
+        console.error('폴더 이동 실패:', error);
+        alert('폴더 이동 중 오류가 발생했습니다.');
       }
     },
 
@@ -296,24 +392,40 @@ export default {
       }
     },
     // 폴더 탐색
-    async navigateToFolder(folderId, recordHistory = true) {
-      if (recordHistory && this.currentFolderId !== folderId) {
-        this.backButtonHistory.push(this.currentFolderId); // 현재 폴더 ID를 기록
-        const selectedFolder = this.folderList.find(folder => folder.folderId === folderId); // 탐색할 폴더 찾기
-        if (selectedFolder) {
+    // async navigateToFolder(folderId, recordHistory = true) {
+    async navigateToFolder(folderId) {
+      // if (recordHistory && this.currentFolderId !== folderId) {
+      // this.backButtonHistory.push(this.currentFolderId);
+
+      if (folderId === this.rootFolderId) {
+        console.log('루트 폴더로 이동');
+        console.log('rootFolderId:', this.rootFolderId);
+        // 루트 폴더일 경우, breadcrumb를 초기화
+        this.breadcrumb = [];
+      } else {
+        const selectedFolder = this.folderList.find(folder => folder.folderId === folderId);
+
+        // 선택한 폴더가 이미 breadcrumb에 있다면, 해당 폴더까지만 남기고 나머지 경로는 삭제
+        const folderIndex = this.breadcrumb.findIndex(bc => bc.folderId === folderId);
+        if (folderIndex !== -1) {
+          this.breadcrumb = this.breadcrumb.slice(0, folderIndex + 1);
+        } else if (selectedFolder) {
           this.breadcrumb.push({
             folderId: selectedFolder.folderId,
             folderName: selectedFolder.folderName,
           });
         }
       }
+      // }
+
       this.currentFolderId = folderId;
       await this.refreshFolderList();
     },
+
   },
   created() {
     // this.currentFolderId = this.currentFolderId || 1;
-    this.refreshFolderList();
+    this.loadChannelDrive();
   },
 };
 </script>
@@ -353,6 +465,29 @@ export default {
 .file-item {
   width: 120px;
   text-align: center;
+}
+
+.folder-item i,
+.file-item i {
+  width: 120px;
+  text-align: center;
+  border: 1px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.folder-item[draggable='true'],
+.file-item[draggable='true'] {
+  cursor: grab;
+}
+
+.folder-item:hover,
+.file-item:hover {
+  border-color: lightgray;
+}
+
+.folder-item.dragging,
+.file-item.dragging {
+  opacity: 0.5;
 }
 
 .folder-item i,
