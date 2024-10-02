@@ -2,21 +2,6 @@
   <v-app-bar :elevation="2" class="topMenu" height="40">
     <v-app-bar-title class="title"> COCONOTE </v-app-bar-title>
     <template v-slot:append>
-      <!-- <v-select
-        v-model="selectedValue"
-        :items="items"
-        item-title="name"
-        item-value="workspaceId"
-        @change="emitSelected"
-        outlined
-        single-line
-        hide-details
-        dense
-        class="inline"
-        style="font-size:0.9rem"
-      ></v-select> -->
-
-
         <v-form @submit.prevent="emitSelected">
           <v-row>
             <v-col cols="auto">
@@ -38,9 +23,6 @@
             </v-col>
           </v-row>
         </v-form>
-
-
-
 
 
     </template>
@@ -66,7 +48,7 @@ export default {
   methods: {
     async fetchMyWorkspaceList() {
       try {
-        const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtaW5qaTIyNzZAZ21haWwuY29tIiwiaWF0IjoxNzI3ODI5MzQxLCJleHAiOjE3Mjg0MzQxNDF9.6xC5fA7Lfq_9Ba9ZW8aigljUAnOwMut4N2iVS2KpOQtnc9KzS03dJdb1RrR56sTh";
+        const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtaW5qaTIyNzZAZ21haWwuY29tIiwiaWF0IjoxNzI3ODM0NTQ0LCJleHAiOjE3Mjg0MzkzNDR9.l3yDcj9uMg1iT_71PTeihdjUgp974t-Oz_ucZnmOQHF-i4d7la7X1MOY-WCNPaQx";
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/workspace/list`, {
           headers: {
             'Authorization': `Bearer ${token}` // 토큰을 헤더에 추가
