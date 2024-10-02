@@ -202,7 +202,7 @@ export default {
           fileUrl: url, // 짧아진 S3 URL
         })), // 파일 메타데이터 리스트
       };
-      const response = await axios.post('http://localhost:8080/api/v1/files/metadata', metadataDto);
+      const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/files/metadata`, metadataDto);
       this.filesRes = response.data.result;
     },
     
