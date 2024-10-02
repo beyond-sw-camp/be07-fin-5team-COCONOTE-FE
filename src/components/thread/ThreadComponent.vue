@@ -158,6 +158,7 @@ export default {
       this.message = "";
       this.fileList = [];
       this.uploadProgress = [];
+      this.filesRes = null;
     },
     async getPresignedURL(){
       const reqFiles = this.fileList.map(file => ({fileName:file.name, fileSize:file.size}))
