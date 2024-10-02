@@ -23,11 +23,11 @@
     </ul>
     
     <div class="input-group">
-      
+
       <div class="image-group">
         <div v-for="(file, index) in fileList" :key="index">
           <button type="button" @click="deleteImage(index)">삭제</button>
-          <img :src="file.imageUrl" alt="image" style="height: 120px; width: 120px; object-fit: cover;">
+          <img :src="file.imageUrl" @error="e => e.target.src = require('@/assets/file.png')"  style="height: 120px; width: 120px; object-fit: cover;">
           <p class="custom-contents">{{file.name}}</p>
         </div>
       </div>
@@ -41,7 +41,7 @@
           v-on:keypress.enter="sendMessage"
         />
         <div class="input-group-append">
-          <button class="btn btn-primary" type="button" @click="sendMessage" :disabled="!message">보내기</button>
+          <button class="btn btn-primary" type="button" @click="sendMessage" :disabled="!message && fileList.length === 0">보내기</button>
         </div>
       </div>
     </div>
@@ -215,7 +215,6 @@ export default {
             file,
             imageUrl: URL.createObjectURL(file)})
         });
-        
     },
     async getMessageList() {
       try {
@@ -401,6 +400,12 @@ export default {
   width: 120px;
   max-height: 180px;
 }
+.custom-contents{
+  max-width: 120px; /* 제목의 최대 너비를 설정 */
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+  text-overflow: ellipsis !important; /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
+  white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
+}
 .text-group {
   display: flex;
   flex-direction: row;
@@ -408,10 +413,5 @@ export default {
 .form-control {
     width: 100%;
 }
-.custom-contents{
-  max-width: 120px; /* 제목의 최대 너비를 설정 */
-  overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
-  text-overflow: ellipsis !important; /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
-  white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
-}
+
 </style>
