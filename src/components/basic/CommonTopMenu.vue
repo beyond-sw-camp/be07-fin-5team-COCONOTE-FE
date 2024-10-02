@@ -22,7 +22,7 @@
               <v-btn type="submit">이동</v-btn>
             </v-col>
             <v-col cols="auto">
-              <v-btn icon @click="createWorkspace">
+              <v-btn icon @click="showWorkspaceModal">
                 <v-icon>mdi-plus</v-icon>
               </v-btn>
             </v-col>
@@ -32,19 +32,27 @@
 
     </template>
   </v-app-bar>
+            <CreateWorkspaceModal 
+        v-model = "createWorkspace"
+        @update:dialog="createWorkspace = $event"
+        >
+          </CreateWorkspaceModal>
 </template>
 
 <script>
 import axios from "axios";
+import CreateWorkspaceModal from '@/components/createSpaces/CreateWorkspaceModal.vue';
 
 export default {
   name: "CommonTopMenu",
   components: {
+    CreateWorkspaceModal
   },
   data() {
     return {
       items: [],
       selectedValue: null,
+      createWorkspace:false,
     };
   },
   created() {
@@ -67,7 +75,11 @@ export default {
     },
     emitSelected() {
       this.$emit('selected', this.selectedValue);
-    }
+    },
+          showWorkspaceModal() {
+            this.createWorkspace = true;
+            console.log(this.createWorkspace);
+        }
   }
 };
 </script>

@@ -26,15 +26,16 @@
       </v-list-item>
     </v-list>
       <div>
-        <v-icon @click="createSection">mdi-plus</v-icon>새 섹션 생성
+        <v-icon @click="showSectionModal">mdi-plus</v-icon>새 섹션 생성
     </div>
-
   </v-navigation-drawer>
+
 </template>
 
 <script>
 import axios from "axios";
 import { mapActions } from "vuex";
+
 
 export default {
     props: {
@@ -43,7 +44,8 @@ export default {
     }
   },
   name: "InnerRelatedMenuHome",
-  components: {},
+  components: {
+  },
   created() {
     // this.selectedMenuId = this.$store.getters.getChannelId;
     // this.selectedMenuId = this.selectedMenuId != null ? this.selectedMenuId : "l"; // 기본값으로 일단 1번 선택
@@ -59,6 +61,7 @@ export default {
       // selectedMenuId: "1", // 기본값으로 일단 1번 선택
       workspaceInfo: {},
       workspaceName: "",
+      
     };
   },
   methods: {
