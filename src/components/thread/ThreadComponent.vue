@@ -23,6 +23,7 @@
     </ul>
     
     <div class="input-group">
+      
       <div class="image-group">
         <div v-for="(file, index) in fileList" :key="index">
           <button type="button" @click="deleteImage(index)">삭제</button>
@@ -49,7 +50,8 @@
 
 <script>
 import ThreadLineComponent from "@/components/thread/ThreadLineComponent.vue";
-import axios from "axios";
+// import axios from "axios";
+import axios from '@/services/axios'
 import SockJS from "sockjs-client";
 // import Stomp from "stompjs";
 import { Stomp } from "@stomp/stompjs";
@@ -82,6 +84,8 @@ export default {
       isLastPage: false,
       files: null,
       fileList: [],
+      uploadProgress: [], // 업로드 진행 상황
+      filesRes: null,
     };
   },
   created() {
@@ -111,13 +115,104 @@ export default {
     }
   },
   computed: {},
+
   methods: {
+    async sendMessage() {
+      const authToken = localStorage.getItem('accessToken');
+
+      if(this.fileList.length>0) {
+        try{
+          const presignedUrls = await this.getPresignedURL();
+
+          // 각 파일에 대해 Presigned URL을 이용하여 S3에 업로드
+          const uploadedFileUrls = await Promise.all(this.fileList.map(file => this.uploadFileToS3(file.file, presignedUrls[file.name])));
+
+          // 파일 중 업로드가 실패한 파일이 있으면 필터링
+          const successfulUploads = uploadedFileUrls.filter(url => url !== null);
+          
+
+          // 성공적으로 업로드된 파일만 메타데이터 저장
+          if (successfulUploads.length) {
+            await this.saveFileMetadata(successfulUploads);
+          } else {
+            alert('모든 파일 업로드에 실패했습니다.');
+          }
+        }catch(error){
+          console.error('Upload failed:', error);
+          alert('파일 업로드 중 오류가 발생했습니다.'); 
+        }
+      }
+
+      this.ws.send(
+        "/pub/chat/message",
+        {Authorization: authToken},
+        JSON.stringify({
+          type: "TALK",
+          channelId: this.roomId,
+          senderId: this.sender,
+          content: this.message,
+          workspaceId: this.workspaceId,
+          files: this.filesRes?.map(file => ({fileId:file.id, fileName: file.fileName, fileURL: file.fileUrl }))
+        })
+      );
+      this.message = "";
+      this.fileList = [];
+      this.uploadProgress = [];
+    },
+    async getPresignedURL(){
+      const reqFiles = this.fileList.map(file => ({fileName:file.name, fileSize:file.size}))
+      const response = await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/files/presigned-urls`, reqFiles
+      );
+      return response.data.result;
+    },
+    async uploadFileToS3(file, presignedUrl) {
+      
+      try {
+        const config = {
+          headers: {
+            'Content-Type': file.type, // 파일 타입 지정
+          },
+          onUploadProgress: (progressEvent) => {
+            const index = this.files.indexOf(file); // 인덱스 찾기
+            this.uploadProgress[index] = Math.round((progressEvent.loaded * 100) / progressEvent.total); // 업로드 진행상황 업데이트
+          },
+        };
+
+        await axios.put(presignedUrl, file, config)
+
+        // S3에 업로드된 파일의 URL에서 ? 앞부분만 반환 (쿼리 파라미터 제거)
+        return this.extractS3Url(presignedUrl);
+      } catch (error) {
+        console.error(`Error uploading ${file.name}:`, error);
+        return null; // 업로드 실패 시 null 반환
+      }
+    },
+    // Presigned URL에서 ? 이전의 S3 URL만 남김
+    extractS3Url(presignedUrl) {
+      return presignedUrl.split('?')[0]; // ? 기준으로 앞부분만 추출
+    },
+    async saveFileMetadata(uploadedFileUrls) {
+      const metadataDto = {
+        channelId: this.id, // 적절한 채널 ID로 수정하세요
+        fileType: 'THREAD', // 백엔드에서 필요한 Enum 값 (FileType.THREAD, FileType.CANVAS 등)
+        fileSaveListDto: uploadedFileUrls.map((url, index) => ({
+          fileName: this.fileList[index].name, // 원본 파일 이름
+          fileUrl: url, // 짧아진 S3 URL
+        })), // 파일 메타데이터 리스트
+      };
+      const response = await axios.post('http://localhost:8080/api/v1/files/metadata', metadataDto);
+      this.filesRes = response.data.result;
+    },
+    
+    
     fileUpdate(){
         this.files.forEach(file => {
           this.fileList.push({
             name: file.name,
             size: file.size,
             type: file.type, 
+            file,
             imageUrl: URL.createObjectURL(file)})
         });
         
@@ -187,33 +282,11 @@ export default {
         }, 100);
       }
     },
-    async getPresignedURL(){
-      const reqFiles = this.fileList.map(file => ({fileName:file.name, fileSize:file.size}))
-      const response = await axios.post(
-          `${process.env.VUE_APP_API_BASE_URL}/files/presigned-urls`, reqFiles
-        );
-        console.log(response.data);
-        
-    },
+    
     deleteImage(index){
       this.fileList.splice(index, 1);
     },
-    sendMessage() {
-      const authToken = localStorage.getItem('accessToken');
-      if(this.fileList.length>0) this.getPresignedURL();
-      this.ws.send(
-        "/pub/chat/message",
-        {Authorization: authToken},
-        JSON.stringify({
-          type: "TALK",
-          channelId: this.roomId,
-          senderId: this.sender,
-          content: this.message,
-          workspaceId: this.workspaceId,
-        })
-      );
-      this.message = "";
-    },
+    
     recvMessage(recv) {
       this.messages.unshift({
         id: recv.id,
@@ -263,42 +336,42 @@ export default {
       );
     },
     getTime(createdAt) {
-            const createdTime = new Date(createdAt);
-            let hour = createdTime.getHours();
-            let minute = createdTime.getMinutes();
-            let ampm;
-            if(hour < 12) {
-                ampm = '오전'
-            } else {
-                ampm = '오후'
-                hour -= 12;
-            }
-            if(hour < 10) {
-                hour = '0'+hour;
-            }
+      const createdTime = new Date(createdAt);
+      let hour = createdTime.getHours();
+      let minute = createdTime.getMinutes();
+      let ampm;
+      if(hour < 12) {
+          ampm = '오전'
+      } else {
+          ampm = '오후'
+          hour -= 12;
+      }
+      if(hour < 10) {
+          hour = '0'+hour;
+      }
 
-            if(minute < 10) {
-                minute = '0'+minute;
-            }
+      if(minute < 10) {
+          minute = '0'+minute;
+      }
 
-            return ampm + ' ' + hour + ':' + minute;
-        },
-        isDifferentDay(d1, d2) {
-            const day1 = new Date(d1);
-            const day2 = new Date(d2);
+      return ampm + ' ' + hour + ':' + minute;
+  },
+  isDifferentDay(d1, d2) {
+      const day1 = new Date(d1);
+      const day2 = new Date(d2);
 
 
-            if(day1.getFullYear() == day2.getFullYear()
-            && day1.getMonth() == day2.getMonth()
-            && day1.getDay() == day2.getDay()) return false;
+      if(day1.getFullYear() == day2.getFullYear()
+      && day1.getMonth() == day2.getMonth()
+      && day1.getDay() == day2.getDay()) return false;
 
-            return true;
-        },
-        getDay(createdAt) {
-            const createdTime = new Date(createdAt);
+      return true;
+  },
+  getDay(createdAt) {
+      const createdTime = new Date(createdAt);
 
-            return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`; 
-        }
+      return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`; 
+  }
   },
 };
 </script>
