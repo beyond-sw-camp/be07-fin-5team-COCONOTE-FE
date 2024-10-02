@@ -1,42 +1,29 @@
 <template>
-  <div class="container" v-cloak>
-    <div class="row">
-      <div class="col-md-12">
-        <h3>채팅방 리스트</h3>
-      </div>
-    </div>
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <label class="input-group-text">방제목</label>
-      </div>
-      <input
-        type="text"
+  <v-list class="h-100">
+    <v-list-item
+      prepend-icon="mdi-note-text-outline"
+      v-for="item in chatrooms"
+      :key="item.id"
+      @click="changeCanvasId(item.id)"
+    >
+      {{ item.title }}
+    </v-list-item>
+    <v-list-item class="list-create">
+      <v-text-field
+        color="primary"
+        density="compact"
         class="form-control"
+        variant="underlined"
         v-model="canvasName"
-        @keyup.enter="createRoom"
-      />
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="createRoom">
-          채팅방 개설
-        </button>
-      </div>
-    </div>
-    <ul class="list-group">
-      <li
-        class="list-group-item list-group-item-action"
-        v-for="item in chatrooms"
-        :key="item.id"
-        @click="enterRoom(item.id)"
-      >
-        {{ item.title }}
-      </li>
-    </ul>
-  </div>
+        @keyup.enter="createCanvas"
+      ></v-text-field>
+    </v-list-item>
+  </v-list>
 </template>
 
 <script>
 import axios from "axios";
-// import VueRouter from "vue-router"; // Vue 2에서는 router를 따로 불러와서 사용해야 함
+// import { useRouter } from "vue-router";
 
 export default {
   name: "CanvasListComponent",
@@ -50,12 +37,15 @@ export default {
   methods: {
     findAllRoom() {
       axios
-        .get(`${process.env.VUE_APP_API_BASE_URL}/canvas/${this.channelId}/list`)
+        .get(
+          `${process.env.VUE_APP_API_BASE_URL}/canvas/${this.channelId}/list`
+        )
         .then((response) => {
           this.chatrooms = response.data.result.content;
+          this.changeCanvasId(response.data.result.content[0].id); // 첫번째 id 자동선택
         });
     },
-    createRoom() {
+    createCanvas() {
       if (this.canvasName === "") {
         alert("캔버스 제목을 입력해 주십시요.");
         return;
@@ -77,16 +67,16 @@ export default {
           });
       }
     },
-    enterRoom(canvasId) {
-      const sender = prompt("대화명을 입력해 주세요.");
+    changeCanvasId(canvasId) {
+      const sender = "테스트유저 "+ Date.now() ;
       if (sender) {
-        localStorage.setItem("wschat.sender", sender);
-        localStorage.setItem("wschat.canvasId", canvasId);
-        this.$router.push(`/canvas/detail`);
+        console.log("changeCanvasId!!",canvasId)
+        this.$emit("updateCanvasId", canvasId);
       }
     },
   },
-  mounted() {
+
+  created() {
     this.findAllRoom();
   },
 };
