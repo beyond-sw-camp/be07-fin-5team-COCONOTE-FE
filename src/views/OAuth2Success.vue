@@ -73,7 +73,9 @@ export default {
         }
 
         // Axios GET 요청 보내기
-        const response = await axios.get(`${VUE_APP_BASE_URL}/api/v1/member/me`);
+        const baseUrl = `${process.env.VUE_APP_BASE_URL}`; // process.env로 환경 변수에 접근
+        console.log(baseUrl);
+        const response = await axios.get(baseUrl + "/api/v1/member/me");
 
         // 응답 데이터를 memberInfo에 저장
         this.memberInfo = response.data;
