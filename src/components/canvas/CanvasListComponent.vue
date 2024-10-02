@@ -19,20 +19,6 @@
       ></v-text-field>
     </v-list-item>
   </v-list>
-  <div class="container" v-cloak>
-    <!-- <div class="row">
-      <div class="col-md-12">
-        <h3>채팅방 리스트</h3>
-      </div>
-    </div>
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <label class="input-group-text">방제목</label>
-      </div>
-      <div class="input-group-append">
-      </div>
-    </div> -->
-  </div>
 </template>
 
 <script>
@@ -41,7 +27,6 @@ import axios from "axios";
 
 export default {
   name: "CanvasListComponent",
-
   data() {
     return {
       canvasName: "",
@@ -57,6 +42,7 @@ export default {
         )
         .then((response) => {
           this.chatrooms = response.data.result.content;
+          this.changeCanvasId(response.data.result.content[0].id); // 첫번째 id 자동선택
         });
     },
     createCanvas() {
@@ -82,10 +68,9 @@ export default {
       }
     },
     changeCanvasId(canvasId) {
-      const sender = prompt("대화명을 입력해 주세요.");
+      const sender = "테스트유저 "+ Date.now() ;
       if (sender) {
-        localStorage.setItem("wschat.sender", sender);
-        localStorage.setItem("wschat.roomId", canvasId);
+        console.log("changeCanvasId!!",canvasId)
         this.$emit("updateCanvasId", canvasId);
       }
     },

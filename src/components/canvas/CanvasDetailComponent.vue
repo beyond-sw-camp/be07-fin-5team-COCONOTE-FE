@@ -12,7 +12,7 @@
           @keyup.enter="changeCanvasName"
         ></v-text-field>
       </v-col>
-      <v-col class="p-0" style="text-align:right;">
+      <v-col class="p-0" style="text-align: right">
         <v-icon icon="mdi-delete" @click="deleteCanvas" />
       </v-col>
     </v-row>
@@ -36,12 +36,22 @@ import { Stomp } from "@stomp/stompjs";
 
 export default {
   name: "CanvasDetailComponent",
+  props: {
+    canvasId: {
+      type: Number,
+      required: true,
+    },
+  },
+  watch: {
+    canvasId(newId) {
+      this.handleCanvasIdChange(newId);
+    },
+  },
   components: {
     TipTabEditor,
   },
   data() {
     return {
-      canvasId: "",
       room: {},
       sender: "",
       member: "",
@@ -52,6 +62,8 @@ export default {
       sock: null,
       sockBlock: null,
       reconnect: 0,
+
+      detailCanvasId: null,
       canvas: {},
       blocks: [],
 
@@ -66,19 +78,24 @@ export default {
     };
   },
   mounted() {
-    this.roomId = localStorage.getItem("wschat.canvasId");
-    this.canvasId = this.roomId;
-
+    console.error("생성중...")
     this.sender = localStorage.getItem("wschat.sender");
-    this.member = localStorage.getItem("wschat.sender");
-    this.getCanvasAndBlockInfo();
-    this.connect();
+
     window.addEventListener("keydown", this.onKeydown); // 키보드 입력 이벤트 감지
+
+    this.handleCanvasIdChange(this.canvasId);
   },
   methods: {
+    handleCanvasIdChange(newCanvasId) {
+      console.error("생성중...222 >>", newCanvasId)
+      this.detailCanvasId = newCanvasId;
+      this.member = localStorage.getItem("wschat.sender");
+      this.getCanvasAndBlockInfo();
+      this.connect();
+    },
     async getCanvasAndBlockInfo() {
       const response = await axios.get(
-        `${process.env.VUE_APP_API_BASE_URL}/canvas/${this.roomId}`
+        `${process.env.VUE_APP_API_BASE_URL}/canvas/${this.detailCanvasId}`
       );
 
       this.room = response.data.result;
@@ -86,7 +103,7 @@ export default {
       // console.log("####", response.data.result);
 
       const blockResponse = await axios.get(
-        `${process.env.VUE_APP_API_BASE_URL}/block/${this.room.id}/list`
+        `${process.env.VUE_APP_API_BASE_URL}/block/${this.detailCanvasId}/list`
       );
       this.blocks = blockResponse.data.result;
       this.defaultBlockFeIds = blockResponse.data.result.map((el) => {
@@ -130,7 +147,7 @@ export default {
           {},
           JSON.stringify({
             type: "CANVAS",
-            roomId: this.roomId,
+            roomId: this.detailCanvasId,
             sender: this.sender,
             message: JSON.stringify(this.message),
           })
@@ -168,16 +185,19 @@ export default {
       this.ws.connect(
         {},
         () => {
-          this.ws.subscribe(`/sub/canvas/room/${this.roomId}`, (message) => {
-            const recv = JSON.parse(message.body);
-            this.recvMessage(recv);
-          });
+          this.ws.subscribe(
+            `/sub/canvas/room/${this.detailCanvasId}`,
+            (message) => {
+              const recv = JSON.parse(message.body);
+              this.recvMessage(recv);
+            }
+          );
           this.ws.send(
             `/pub/canvas/message`,
             {},
             JSON.stringify({
               type: "ENTER",
-              roomId: this.roomId,
+              roomId: this.detailCanvasId,
               sender: this.sender,
             })
           );
@@ -203,7 +223,7 @@ export default {
         {},
         () => {
           this.wsBlock.subscribe(
-            `/sub/block/room/${this.roomId}`,
+            `/sub/block/room/${this.detailCanvasId}`,
             (message) => {
               const recv = JSON.parse(message.body);
               this.recvMessage(recv);
@@ -214,7 +234,7 @@ export default {
             {},
             JSON.stringify({
               type: "ENTER",
-              roomId: this.roomId,
+              roomId: this.detailCanvasId,
               member: this.member,
             })
           );
@@ -232,19 +252,21 @@ export default {
         }
       );
     },
-    // beforeRouteLeave(to, from, next) {
-    //   // 구독 해제 및 WebSocket 연결 종료
-    //   if (this.subscription) {
-    //     this.subscription.unsubscribe();
-    //     console.log("WebSocket subscription unsubscribed.");
-    //   }
-    //   if (this.ws) {
-    //     this.ws.disconnect(() => {
-    //       console.log("WebSocket connection closed.");
-    //     });
-    //   }
-    //   next(); // 라우트 변경을 계속 진행
-    // },
+    beforeRouteLeave() {
+      // 컴포넌트 제거 시 이벤트 리스너 제거
+      window.removeEventListener("keydown", this.onKeydown);
+
+      // 컴포넌트가 파괴되기 전에 구독 해제 및 WebSocket 연결 종료
+      if (this.subscription) {
+        this.subscription.unsubscribe(); // 구독 해제
+        console.log("WebSocket subscription unsubscribed.");
+      }
+      if (this.ws) {
+        this.ws.disconnect(() => {
+          console.log("WebSocket connection closed.");
+        });
+      }
+    },
 
     // tiptabEditor method
     updateBlock(blockFeId, blockElType, blockContent, previousId, parentId) {
@@ -320,19 +342,7 @@ export default {
     },
   },
   beforeUnmount() {
-    // 컴포넌트 제거 시 이벤트 리스너 제거
-    window.removeEventListener("keydown", this.onKeydown);
-
-    // 컴포넌트가 파괴되기 전에 구독 해제 및 WebSocket 연결 종료
-    if (this.subscription) {
-      this.subscription.unsubscribe(); // 구독 해제
-      console.log("WebSocket subscription unsubscribed.");
-    }
-    if (this.ws) {
-      this.ws.disconnect(() => {
-        console.log("WebSocket connection closed.");
-      });
-    }
+    this.beforeRouteLeave();
   },
 };
 </script>
@@ -342,7 +352,7 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 24px;
-  .canvasTitleContainer{
+  .canvasTitleContainer {
     align-items: center;
   }
   .canvasTitle {

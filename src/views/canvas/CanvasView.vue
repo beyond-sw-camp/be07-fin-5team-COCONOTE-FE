@@ -4,7 +4,7 @@
     <div class="channelInsideContentWrap">
       <v-row class="canvasContatiner ma-0">
         <v-col cols="2" class="canvasListContainer pa-0">
-          <CanvasListComponent />
+          <CanvasListComponent @updateCanvasId="updateCanvasId" />
           <!-- <v-list class="h-100">
             <v-list-item prepend-icon="mdi-home">Home</v-list-item>
 
@@ -49,7 +49,16 @@
           </v-list> -->
         </v-col>
         <v-col class="canvasDetailContainer pa-0">
-          <CanvasDetailComponent />
+          <v-progress-circular
+            v-if="!isLoading"
+            indeterminate
+            color="primary"
+          ></v-progress-circular>
+          <CanvasDetailComponent
+            v-else
+            :canvasId="canvasId"
+            :key="canvasId"
+          />
         </v-col>
       </v-row>
     </div>
@@ -65,15 +74,18 @@ export default {
   components: {
     ChannelCommonMenu,
     CanvasListComponent,
-    CanvasDetailComponent
+    CanvasDetailComponent,
   },
   data() {
     return {
-      canvasId: 1, // 초기 canvasId 값
+      isLoading: false,
+      canvasId: null, // 초기 canvasId 값
     };
   },
   methods: {
     updateCanvasId(newCanvasId) {
+      this.isLoading = true;
+      console.log("canvasId 변경!", newCanvasId);
       this.canvasId = newCanvasId;
     },
   },
@@ -95,7 +107,7 @@ export default {
       overflow: visible;
     }
   }
-  .canvasDetailContainer{
+  .canvasDetailContainer {
     height: 100%;
     overflow: auto;
   }
