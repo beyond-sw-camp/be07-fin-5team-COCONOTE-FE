@@ -84,7 +84,7 @@ export default {
       isLastPage: false,
       files: null,
       fileList: [],
-      uploadProgress: [], // 업로드 진행 상황
+      // uploadProgress: [], // 업로드 진행 상황
       filesRes: null,
     };
   },
@@ -174,10 +174,10 @@ export default {
           headers: {
             'Content-Type': file.type, // 파일 타입 지정
           },
-          onUploadProgress: (progressEvent) => {
-            const index = this.files.indexOf(file); // 인덱스 찾기
-            this.uploadProgress[index] = Math.round((progressEvent.loaded * 100) / progressEvent.total); // 업로드 진행상황 업데이트
-          },
+          // onUploadProgress: (progressEvent) => {
+          //   const index = this.files.indexOf(file); // 인덱스 찾기
+          //   this.uploadProgress[index] = Math.round((progressEvent.loaded * 100) / progressEvent.total); // 업로드 진행상황 업데이트
+          // },
         };
 
         await axios.put(presignedUrl, file, config)
