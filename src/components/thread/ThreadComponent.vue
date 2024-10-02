@@ -202,7 +202,7 @@ export default {
           fileUrl: url, // 짧아진 S3 URL
         })), // 파일 메타데이터 리스트
       };
-      const response = await axios.post('http://localhost:8080/api/v1/files/metadata', metadataDto);
+      const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/files/metadata`, metadataDto);
       this.filesRes = response.data.result;
     },
     
@@ -386,8 +386,11 @@ export default {
   flex-grow: 1; /* 리스트가 가능한 공간을 모두 차지 */
   overflow-y: auto; /* 세로 스크롤 가능 */
   max-height: calc(100vh - 240px);
+  gap: 10px;
 }
-
+.list-group-item{
+  gap: 10px;
+}
 .input-group {
   position: sticky;
   bottom: 0; /* 하단에 고정 */
