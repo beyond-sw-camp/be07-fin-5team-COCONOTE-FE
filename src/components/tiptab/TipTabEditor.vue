@@ -1,6 +1,6 @@
 <template>
   <div v-if="editor" class="container">
-    <div class="control-group">
+    <!-- <div class="control-group">
       <div class="button-group">
         <button
           @click="editor.chain().focus().toggleBold().run()"
@@ -129,8 +129,8 @@
           Purple
         </button>
       </div>
-    </div>
-    <div id="editorArea" style="background-color: #ccc">
+    </div> -->
+    <div id="editorArea">
       <editor-content :editor="editor" />
     </div>
     <div style="width: 100%; margin-top: 30px">
@@ -224,46 +224,40 @@ export default {
         this.localHTML = this.editor.getHTML();
         this.localJSON = this.editor.getJSON();
 
-        // const { selection } = this.editor
-        // const position = this.editor.state.doc.resolve(this.editor.state.selection.from)
-        // console.error("---- ",position)
-        // position.start()
-        // const { from, to } = selection
-        // const text = state.doc.textBetween(from, to, ' ')
+        // const selectedNode = this.editor.state.selection;
 
-        const selectedNode = this.editor.state.selection;
+        // console.log('⭐ Node:', selectedNode);
+        // if (!selectedNode) {
+        //   return false;
+        // }
 
-        if (!selectedNode) {
-          return false;
-        }
+        // const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
+        // if (!updateBlockID) {
+        //   return false;
+        // }
+        // const updateContent =
+        //   selectedNode?.$head?.path[3]?.content?.content[0]?.text;
 
-        const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
-        if (!updateBlockID) {
-          return false;
-        }
-        const updateContent =
-          selectedNode?.$head?.path[3]?.content?.content[0]?.text;
+        // // console.log('⭐ Node:', updateBlockID, updateContent);
+        // const searchElAndPrevEl = this.findPreviousId(
+        //   this.localJSON.content,
+        //   updateBlockID
+        // );
 
-        // console.log('⭐ Node:', updateBlockID, updateContent);
-        const searchElAndPrevEl = this.findPreviousId(
-          this.localJSON.content,
-          updateBlockID
-        );
+        // const previousId = searchElAndPrevEl[0];
+        // const targetElType = searchElAndPrevEl[1];
 
-        const previousId = searchElAndPrevEl[0];
-        const targetElType = searchElAndPrevEl[1];
+        // // console.error("➡️prev➡️➡️", previousId);
+        // const parentId = null;
 
-        // console.error("➡️prev➡️➡️", previousId);
-        const parentId = null;
-
-        // 여기서 감지해서 보내기
-        this.$parent.updateBlock(
-          updateBlockID,
-          targetElType,
-          updateContent == "" ? "" : updateContent,
-          previousId,
-          parentId
-        );
+        // // 여기서 감지해서 보내기
+        // this.$parent.updateBlock(
+        //   updateBlockID,
+        //   targetElType,
+        //   updateContent == "" ? "" : updateContent,
+        //   previousId,
+        //   parentId
+        // );
       },
       content: this.defaultContent,
     });
@@ -273,36 +267,64 @@ export default {
     //   console.log(`beforeCreate`, editor);
     // });
 
-    // this.editor.on("create", ({ editor }) => {
-    //   // The editor is ready.
-    //   console.log(`create`, editor);
-    // });
+    this.editor.on("create", ({ editor }) => {
+      // The editor is ready.
+      console.log(`create`, editor);
+      this.localHTML = editor.getHTML();
+      this.localJSON = editor.getJSON();
+    });
 
     // this.editor.on("update", ({ editor }) => {
     //   // The content has changed.
     //   console.log(`update`, editor.view?.trackWrites?.data, editor);
     // });
 
-    // this.editor.on("selectionUpdate", ({ editor }) => {
-    //   // The selection has changed.
-    //   console.log(`selectionUpdate`, editor.view?.trackWrites?.data
-    //   , editor.view?.trackWrites?.parentElement?.dataset?.id
-    //   , editor.view?.trackWrites?.dataset?.id, editor, );
-    //   // console.log(">>>>>>>>>>>>>>>",this.editor.commands.selectParentNode())
-    //   // const uid = (() => true)(editor.view.state.selection)?.node.attrs.uid;
+    this.editor.on("selectionUpdate", ({ editor }) => {
+      // The selection has changed.
+      console.log(
+        `selectionUpdate`,
+        editor.view?.trackWrites?.data,
+        editor.view?.trackWrites?.parentElement?.dataset?.id,
+        editor.view?.trackWrites?.dataset?.id,
+        editor
+      );
 
-    //   // console.log(uid)
+      const selectedNode = editor.state.selection;
+      // console.log("😭😭😭😭😭")
+      // console.log(selectedNode)
+      // console.log("😭😭😭😭😭")
+      if (!selectedNode) {
+        return false;
+      }
 
-    //   // if (lastStoredUID.value != uid) {
-    //   //   nodesChanged.value = true;
-    //   //   lastStoredUID.value = uid;
-    //   // } else {
-    //   //   nodesChanged.value = false;
-    //   // }
+      const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
+      if (!updateBlockID) {
+        return false;
+      }
+      const updateContent =
+        selectedNode?.$head?.path[3]?.content?.content[0]?.text;
 
-    //   // 여기서 감지해서 보내기
-    //   // this.$parent.updateBlock(editor.view?.trackWrites?.parentElement?.dataset?.id, editor.view?.trackWrites?.data);
-    // });
+      // console.log('⭐ Node:', updateBlockID, updateContent);
+      const searchElAndPrevEl = this.findPreviousId(
+        this.localJSON.content,
+        updateBlockID
+      );
+
+      const previousId = searchElAndPrevEl[0];
+      const targetElType = searchElAndPrevEl[1];
+
+      // console.error("➡️prev➡️➡️", previousId);
+      const parentId = null;
+
+      // 여기서 감지해서 보내기
+      this.$parent.updateBlock(
+        updateBlockID,
+        targetElType,
+        updateContent == "" ? "" : updateContent,
+        previousId,
+        parentId
+      );
+    });
 
     // this.editor.on("transaction", ({ editor, transaction }) => {
     //   // The editor state has changed.
@@ -404,7 +426,6 @@ export default {
           newElement.setAttribute("data-id", newContent.feId);
           newElement.textContent = newContent.contents;
 
-
           if (newContent.prevBlockId != null) {
             let prevElement = document.querySelector(
               `#editorArea [data-id="${newContent.prevBlockId}"]`
@@ -421,7 +442,6 @@ export default {
         }
         return false;
       }
-
 
       // const from = this.editor.state.selection.from
       // const to = this.editor.state.selection.to
@@ -567,7 +587,7 @@ export default {
   }
 
   > * {
-    margin-left: 3rem;
+    margin-left: 1rem;
   }
 
   .ProseMirror-widget * {

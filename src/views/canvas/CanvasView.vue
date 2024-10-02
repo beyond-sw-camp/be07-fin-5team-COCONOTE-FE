@@ -95,5 +95,9 @@ export default {
       overflow: visible;
     }
   }
+  .canvasDetailContainer{
+    height: 100%;
+    overflow: auto;
+  }
 }
 </style>

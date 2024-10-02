@@ -1,54 +1,20 @@
 <template>
-  <div class="container">
+  <div class="canvasDetailComponentContainer">
+    <h2>{{ room.title }}</h2>
+    <div
+      contenteditable="true"
+      @input="onCanvasTitleInput"
+      :innerHTML="editableContent"
+    ></div>
+    <p>현재 값: {{ editableContent }}</p>
     <div>
-      <h2>{{ room.title }}</h2>
-    </div>
-    <div class="input-group">
-      <div class="input-group-prepend">
-        <label class="input-group-text">내용</label>
-      </div>
-      <input
-        type="text"
-        class="form-control"
-        v-model="message"
-        @keypress.enter="sendMessage"
+      <TipTabEditor
+        v-if="this.editorContent != null"
+        :initialContent="editorContent"
+        :parentUpdateEditorContent="parentUpdateEditorContent"
+        v-model="content"
       />
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="sendMessage">
-          블록추가
-        </button>
-      </div>
     </div>
-    <ul class="list-group">
-      <li class="list-group-item" v-for="message in messages" :key="message.timestamp">
-        {{ message.sender }} - {{ message.message }}
-      </li>
-    </ul>
-    <ul class="block-group">
-      <li class="block-group-item" v-for="block in blocks" :key="block.id">
-        {{ block.id }} >> {{ block.content }}
-        <ul class="block-kid-group" v-if="block.childBlock.length > 0">
-          <li
-            class="block-group-item"
-            v-for="childrenBlock in block.childBlock"
-            :key="childrenBlock.id"
-          >
-            {{ childrenBlock.id }} :: {{ childrenBlock.content }}
-          </li>
-        </ul>
-      </li>
-    </ul>
-  </div>
-  <div>
-    <!-- <v-btn @click="testChangeUpdateEditorContent">test용 초기값 변경</v-btn> -->
-  </div>
-  <div>
-    <TipTabEditor
-      v-if="this.editorContent != null"
-      :initialContent="editorContent"
-      :parentUpdateEditorContent="parentUpdateEditorContent"
-      v-model="content"
-    />
   </div>
 </template>
 
@@ -81,8 +47,13 @@ export default {
 
       defaultBlockFeIds: [],
       activeBlockId: null,
+      lastBlockId: null,
+      lastBlockContent: null,
       editorContent: null,
       parentUpdateEditorContent: "초기 값",
+
+      editableContent: "이곳을 수정할 수 있습니다.",
+      recentKeyboardKey: null,
     };
   },
   mounted() {
@@ -93,6 +64,7 @@ export default {
     this.member = localStorage.getItem("wschat.sender");
     this.getCanvasAndBlockInfo();
     this.connect();
+    window.addEventListener("keydown", this.onKeydown); // 키보드 입력 이벤트 감지
   },
   methods: {
     async getCanvasAndBlockInfo() {
@@ -102,7 +74,7 @@ export default {
 
       this.room = response.data.result;
 
-      console.log("####", response.data.result);
+      // console.log("####", response.data.result);
 
       const blockResponse = await axios.get(
         `${process.env.VUE_APP_API_BASE_URL}/block/${this.room.id}/list`
@@ -118,7 +90,7 @@ export default {
     settingEditorContent() {
       let blockToEditorContentArr = [];
       for (const block of this.blocks) {
-        console.log(block);
+        // console.log(block);
         let tempBlockObj = {
           type: block.type,
           attrs: {
@@ -162,9 +134,9 @@ export default {
     recvMessage(recv) {
       if (recv.type === "CANVAS") {
         const blockJson = JSON.parse(recv.message);
-        console.log("blockJson", blockJson);
+        // console.log("blockJson", blockJson);
         if (this.activeBlockId == blockJson.feId) {
-        // if (this.member == blockJson.member) {
+          // if (this.member == blockJson.member) {
           console.log("현 focus 부분이랑 같은 block 수정 중인 부분.. => block Id 동일함");
         } else {
           console.log("다른 block Id 수정 중!~");
@@ -268,7 +240,7 @@ export default {
 
       this.activeBlockId = blockFeId;
 
-      const blockMethod = this.checkBlockMethod(blockFeId);
+      const blockMethod = this.checkBlockMethod(blockFeId, blockContent);
       this.message = {
         method: blockMethod,
         canvasId: this.canvasId,
@@ -277,24 +249,56 @@ export default {
         contents: blockContent,
         type: blockElType,
         feId: blockFeId,
-        member: this.sender // 현재 접속한 user ⭐ 추후 변경
+        member: this.sender, // 현재 접속한 user ⭐ 추후 변경
       };
+
+      this.lastBlockId = this.activeBlockId;
+      this.lastBlockContent = blockContent;
 
       this.sendMessage();
     },
     checkBlockMethod(targetBlockFeId) {
       const found = this.defaultBlockFeIds.find((element) => element == targetBlockFeId);
+
+      console.error(
+        `${this.recentKeyboardKey}, ${this.lastBlockId}, ${targetBlockFeId}, ${this.lastBlockContent}`
+      );
+      // delete 했을 때의 라인값이 잡히지 않아서, 최근 수정한 값, 현재 값을 비교하면서 진행
+      if (
+        this.recentKeyboardKey == 8 && //현재 키보드가 지우기(backspace)
+        this.lastBlockId != targetBlockFeId && // 마지막 block id와 현 active block id가 다를 때
+        this.lastBlockContent == "" // 마지막 block content가 비어있을 때
+      ) {
+        const index = this.defaultBlockFeIds.indexOf(this.lastBlockId);
+        if (index !== -1) {
+          this.defaultBlockFeIds.splice(index, 1); // 배열에서 해당 값을 삭제
+        }
+        return "delete";
+      }
+
       if (found) {
         // block의 생성, 수정, 삭제 (create, update, delete)
+        console.error("찾은거 하기...", this.recentKeyboardKey);
         return "update";
       } else {
-        // 여기서 삭제, 생성 검사해야함.
         this.defaultBlockFeIds.push(targetBlockFeId);
         return "create";
       }
     },
+
+    onCanvasTitleInput(event) {
+      // 캔버스 title 변경 값
+      this.editableContent = event.target.innerHTML;
+    },
+    onKeydown(event) {
+      this.recentKeyboardKey = event.keyCode; // 누른 키 값을 저장
+      // 8 : 백스페이스
+    },
   },
   beforeUnmount() {
+    // 컴포넌트 제거 시 이벤트 리스너 제거
+    window.removeEventListener("keydown", this.onKeydown);
+
     // 컴포넌트가 파괴되기 전에 구독 해제 및 WebSocket 연결 종료
     if (this.subscription) {
       this.subscription.unsubscribe(); // 구독 해제
@@ -309,8 +313,10 @@ export default {
 };
 </script>
 
-<!-- <style scoped>
-[v-cloak] {
-  display: none;
+<style scoped>
+.canvasDetailComponentContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
 }
-</style> -->
+</style>

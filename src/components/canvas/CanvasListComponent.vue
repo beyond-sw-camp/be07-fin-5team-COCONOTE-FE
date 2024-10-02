@@ -1,7 +1,7 @@
 <template>
   <v-list class="h-100">
     <v-list-item
-      prepend-icon="mdi-home"
+      prepend-icon="mdi-note-text-outline"
       v-for="item in chatrooms"
       :key="item.id"
       @click="changeCanvasId(item.id)"
@@ -82,8 +82,8 @@ export default {
       const sender = prompt("대화명을 입력해 주세요.");
       if (sender) {
         localStorage.setItem("wschat.sender", sender);
-        localStorage.setItem("wschat.roomId", roomId);
-        this.$emit("updateCanvasId", roomId);
+        localStorage.setItem("wschat.roomId", canvasId);
+        this.$emit("updateCanvasId", canvasId);
       }
     },
   },
