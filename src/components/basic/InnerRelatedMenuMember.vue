@@ -1,6 +1,7 @@
 <template>
   <v-navigation-drawer permanent class="innerSubMenu" :width="220">
     <h1>코코노트 동아리</h1>
+    <h1>{{ selectedValue }}</h1>
     <v-list>
       <v-list-item
         title="멤버"
@@ -15,6 +16,11 @@
 
 <script>
 export default {
+    props: {
+    selectedValue: {
+      type: Number,
+    }
+  },
   name: "InnerRelatedMenuMember",
   components: {},
 };

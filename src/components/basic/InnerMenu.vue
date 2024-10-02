@@ -7,7 +7,6 @@
         @click="selectedMenu = 'home'"
         :class="{ 'selected-item': selectedMenu === 'home' }"
       ></v-list-item>
-
       <v-list-item
         prepend-icon="mdi-account-group"
         title="member"
@@ -16,8 +15,8 @@
       ></v-list-item>
     </v-list>
   </v-navigation-drawer>
-  <InnerRelatedMenuHome v-if="selectedMenu === 'home'" />
-  <InnerRelatedMenuMember v-if="selectedMenu === 'member'" />
+  <InnerRelatedMenuHome v-if="selectedMenu === 'home'" :selectedValue="selectedValue" />
+  <InnerRelatedMenuMember v-if="selectedMenu === 'member'" :selectedValue="selectedValue" />
 </template>
 
 
@@ -25,15 +24,22 @@
 import InnerRelatedMenuHome from "@/components/basic/InnerRelatedMenuHome.vue";
 import InnerRelatedMenuMember from "@/components/basic/InnerRelatedMenuMember.vue";
 export default {
+  props: {
+    selectedValue: {
+      type: Number,
+    }
+  },
   name: "InnerMenu",
   components: {
     InnerRelatedMenuHome,
     InnerRelatedMenuMember,
   },
+
   data() {
     return {
       // 선택된 메뉴를 저장할 변수
       selectedMenu: "home", // 기본값으로 'home'을 선택
+      selectedWorkspaceId: "",
     };
   },
 };
