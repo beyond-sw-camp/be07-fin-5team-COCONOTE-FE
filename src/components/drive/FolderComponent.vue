@@ -51,8 +51,12 @@
     <div class="file-list">
       <div v-for="file in fileList" :key="file.fileId" class="file-item" draggable="true"
         @dragstart="onDragStart($event, 'file', file.fileId)" @dragover.prevent @drop="onDrop($event, null)">
-        <i class="file-icon">📄</i>
-        <a :href="file.fileUrl" download>{{ file.fileName }}</a>
+        <template v-if="isImage(file.fileName)">
+          <img :src="file.fileUrl" alt="Image Preview" class="file-preview" />
+        </template>
+        <template v-else>
+          <i class="file-icon">📄</i>
+        </template> <a :href="file.fileUrl" download>{{ file.fileName }}</a>
         <button @click.stop="deleteFile(file.fileId)">삭제</button>
         <button @click.stop="moveFile(file.fileId)">이동</button>
         <button @click.stop="downloadFile(file.fileId)">다운로드</button>
@@ -150,7 +154,7 @@ export default {
     },
 
 
-// 폴더 생성
+    // 폴더 생성
     async createFolder() {
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/drive/folder/create`, {
@@ -290,7 +294,9 @@ export default {
 
       await axios.post(`${process.env.VUE_APP_API_BASE_URL}/files/metadata`, metadataDto);
     },
-
+    isImage(fileName) {
+      return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(fileName);
+    },
     // 파일 삭제
     async deleteFile(fileId) {
       try {
@@ -495,4 +501,13 @@ export default {
   font-size: 24px;
   display: block;
 }
+
+.file-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border: 1px solid lightgray;
+  margin-bottom: 10px;
+}
+
 </style>
