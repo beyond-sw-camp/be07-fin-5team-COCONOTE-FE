@@ -1,6 +1,6 @@
 <template>
   <div v-if="editor" class="container">
-    <div class="control-group">
+    <!-- <div class="control-group">
       <div class="button-group">
         <button
           @click="editor.chain().focus().toggleBold().run()"
@@ -129,8 +129,8 @@
           Purple
         </button>
       </div>
-    </div>
-    <div id="editorArea" style="background-color: #ccc">
+    </div> -->
+    <div id="editorArea">
       <editor-content :editor="editor" />
     </div>
     <div style="width: 100%; margin-top: 30px">
@@ -178,6 +178,8 @@ export default {
       localHTML: "",
       defaultContent: this.initialContent, // 부모로부터 받은 데이터를 초기값으로 설정
       updateEditorContent: this.parentUpdateEditorContent,
+
+      recentKeyboardKey: null,
     };
   },
   watch: {
@@ -188,6 +190,7 @@ export default {
   },
   mounted() {
     console.log(">>>>>>>>PPP", this.defaultContent);
+    window.addEventListener("keydown", this.onKeydown); // 키보드 입력 이벤트 감지
     this.editor = new Editor({
       extensions: [
         Color.configure({ types: [TextStyle.name, ListItem.name] }),
@@ -224,46 +227,42 @@ export default {
         this.localHTML = this.editor.getHTML();
         this.localJSON = this.editor.getJSON();
 
-        // const { selection } = this.editor
-        // const position = this.editor.state.doc.resolve(this.editor.state.selection.from)
-        // console.error("---- ",position)
-        // position.start()
-        // const { from, to } = selection
-        // const text = state.doc.textBetween(from, to, ' ')
+        // const selectedNode = this.editor.state.selection;
 
-        const selectedNode = this.editor.state.selection;
+        // console.log(this.recentKeyboardKey)
 
-        if (!selectedNode) {
-          return false;
-        }
+        // console.log('⭐ Node:', selectedNode);
+        // if (!selectedNode) {
+        //   return false;
+        // }
 
-        const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
-        if (!updateBlockID) {
-          return false;
-        }
-        const updateContent =
-          selectedNode?.$head?.path[3]?.content?.content[0]?.text;
+        // const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
+        // if (!updateBlockID) {
+        //   return false;
+        // }
+        // const updateContent =
+        //   selectedNode?.$head?.path[3]?.content?.content[0]?.text;
 
-        // console.log('⭐ Node:', updateBlockID, updateContent);
-        const searchElAndPrevEl = this.findPreviousId(
-          this.localJSON.content,
-          updateBlockID
-        );
+        // // console.log('⭐ Node:', updateBlockID, updateContent);
+        // const searchElAndPrevEl = this.findPreviousId(
+        //   this.localJSON.content,
+        //   updateBlockID
+        // );
 
-        const previousId = searchElAndPrevEl[0];
-        const targetElType = searchElAndPrevEl[1];
+        // const previousId = searchElAndPrevEl[0];
+        // const targetElType = searchElAndPrevEl[1];
 
-        // console.error("➡️prev➡️➡️", previousId);
-        const parentId = null;
+        // // console.error("➡️prev➡️➡️", previousId);
+        // const parentId = null;
 
-        // 여기서 감지해서 보내기
-        this.$parent.updateBlock(
-          updateBlockID,
-          targetElType,
-          updateContent == "" ? "" : updateContent,
-          previousId,
-          parentId
-        );
+        // // 여기서 감지해서 보내기
+        // this.$parent.updateBlock(
+        //   updateBlockID,
+        //   targetElType,
+        //   updateContent == "" ? "" : updateContent,
+        //   previousId,
+        //   parentId
+        // );
       },
       content: this.defaultContent,
     });
@@ -273,36 +272,105 @@ export default {
     //   console.log(`beforeCreate`, editor);
     // });
 
-    // this.editor.on("create", ({ editor }) => {
-    //   // The editor is ready.
-    //   console.log(`create`, editor);
-    // });
+    this.editor.on("create", ({ editor }) => {
+      // The editor is ready.
+      console.log(`create`, editor);
+      this.localHTML = editor.getHTML();
+      this.localJSON = editor.getJSON();
+    });
 
     // this.editor.on("update", ({ editor }) => {
     //   // The content has changed.
     //   console.log(`update`, editor.view?.trackWrites?.data, editor);
     // });
 
-    // this.editor.on("selectionUpdate", ({ editor }) => {
-    //   // The selection has changed.
-    //   console.log(`selectionUpdate`, editor.view?.trackWrites?.data
-    //   , editor.view?.trackWrites?.parentElement?.dataset?.id
-    //   , editor.view?.trackWrites?.dataset?.id, editor, );
-    //   // console.log(">>>>>>>>>>>>>>>",this.editor.commands.selectParentNode())
-    //   // const uid = (() => true)(editor.view.state.selection)?.node.attrs.uid;
+    this.editor.on("selectionUpdate", ({ editor }) => {
+      // The selection has changed.
+      // console.log(
+      //   `selectionUpdate`,
+      //   editor.view?.trackWrites?.data,
+      //   editor.view?.trackWrites?.parentElement?.dataset?.id,
+      //   editor.view?.trackWrites?.dataset?.id,
+      //   this.recentKeyboardKey,
+      //   editor
+      // );
 
-    //   // console.log(uid)
+      const selectedNode = editor.state.selection;
+      let isReturn = true;
+      console.log("😭😭😭😭😭");
+      console.log(selectedNode);
+      console.log("😭😭😭😭😭");
 
-    //   // if (lastStoredUID.value != uid) {
-    //   //   nodesChanged.value = true;
-    //   //   lastStoredUID.value = uid;
-    //   // } else {
-    //   //   nodesChanged.value = false;
-    //   // }
+      if (!selectedNode) {
+        return false;
+      }
 
-    //   // 여기서 감지해서 보내기
-    //   // this.$parent.updateBlock(editor.view?.trackWrites?.parentElement?.dataset?.id, editor.view?.trackWrites?.data);
-    // });
+      const updateBlockID = selectedNode?.$head?.path[3]?.attrs?.id;
+      if (!updateBlockID) {
+        return false;
+      }
+      const updateContent =
+        selectedNode?.$head?.path[3]?.content?.content[0]?.text;
+
+      console.log(
+        "⭐ Node:",
+        updateBlockID,
+        updateContent,
+        this.recentKeyboardKey,
+        editor.view?.trackWrites?.dataset?.id,
+        updateContent == "",
+        editor.view?.trackWrites?.data,
+        updateContent == undefined
+      );
+      if (this.localJSON.content != "") {
+        this.localJSON = this.editor.getJSON();
+      }
+
+      // 삭제 확인 : keyCode 감지하려면 우선순위때문에 삭제한 id가 안나옴..
+      const originTargetBlockId = editor.view?.trackWrites?.dataset?.id;
+      const originTargetBlockContents = editor.view?.trackWrites?.data;
+      console.error(originTargetBlockId, originTargetBlockContents, updateBlockID);
+      if (
+        originTargetBlockContents == undefined &&
+        originTargetBlockId != undefined
+      ) {
+        // 내용이 undefined 이고, updateTarget이랑 originTarget이랑 다를 때감지 (삭제 확인용 감지)
+        const result = this.localJSON.content.find(
+          (item) => item.attrs && item.attrs.id === originTargetBlockId
+        );
+        console.log("result >>>>>>", result);
+        if (result == undefined) {
+          console.error("삭제다!!!");
+          this.$parent.deleteBlock(originTargetBlockId);
+          isReturn = false;
+        }
+      }
+
+      // 삭제 method를 보내지 않았다면
+      if (!isReturn) {
+        return false;
+      }
+      // element 위치 감지
+      const searchElAndPrevEl = this.findPreviousId(
+        this.localJSON.content,
+        updateBlockID
+      );
+
+      const previousId = searchElAndPrevEl[0];
+      const targetElType = searchElAndPrevEl[1];
+
+      // console.error("➡️prev➡️➡️", previousId);
+      const parentId = null;
+
+      // 여기서 감지해서 보내기
+      this.$parent.updateBlock(
+        updateBlockID,
+        targetElType,
+        updateContent == "" ? "" : updateContent,
+        previousId,
+        parentId
+      );
+    });
 
     // this.editor.on("transaction", ({ editor, transaction }) => {
     //   // The editor state has changed.
@@ -404,7 +472,6 @@ export default {
           newElement.setAttribute("data-id", newContent.feId);
           newElement.textContent = newContent.contents;
 
-
           if (newContent.prevBlockId != null) {
             let prevElement = document.querySelector(
               `#editorArea [data-id="${newContent.prevBlockId}"]`
@@ -421,7 +488,6 @@ export default {
         }
         return false;
       }
-
 
       // const from = this.editor.state.selection.from
       // const to = this.editor.state.selection.to
@@ -455,8 +521,15 @@ export default {
       // 여기에 content 변경 시 처리할 로직 추가
       // this.editor.setContent(newContent); // 예: TipTap 에디터에 새로운 내용을 반영
     },
+    onKeydown(event) {
+      this.recentKeyboardKey = event.keyCode; // 누른 키 값을 저장
+      console.log("key event!! >> ", this.recentKeyboardKey);
+      // 8 : 백스페이스
+    },
   },
   beforeUnmount() {
+    // 컴포넌트 제거 시 이벤트 리스너 제거
+    window.removeEventListener("keydown", this.onKeydown);
     this.editor.destroy();
   },
 };
@@ -567,7 +640,7 @@ export default {
   }
 
   > * {
-    margin-left: 3rem;
+    margin-left: 1rem;
   }
 
   .ProseMirror-widget * {
