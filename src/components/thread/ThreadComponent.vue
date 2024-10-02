@@ -386,8 +386,11 @@ export default {
   flex-grow: 1; /* 리스트가 가능한 공간을 모두 차지 */
   overflow-y: auto; /* 세로 스크롤 가능 */
   max-height: calc(100vh - 240px);
+  gap: 10px;
 }
-
+.list-group-item{
+  gap: 10px;
+}
 .input-group {
   position: sticky;
   bottom: 0; /* 하단에 고정 */
