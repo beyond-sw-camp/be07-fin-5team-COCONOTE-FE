@@ -2,73 +2,63 @@
   <v-app-bar :elevation="2" class="topMenu" height="40">
     <v-app-bar-title class="title"> COCONOTE </v-app-bar-title>
     <template v-slot:append>
-        <v-form @submit.prevent="emitSelected">
-          <v-row>
-            <v-col cols="auto">
-              <v-select
-                v-model="selectedValue"
-        :items="items"
-        item-title="name"
-        item-value="workspaceId"
-        outlined
-        single-line
-        hide-details
-        dense
-        class="inline"
-        style="font-size:0.9rem"
-      ></v-select>
+        <v-row>
+          <v-col cols="auto" v-if="isLoading == true">
+            <v-select
+              v-model="workspaceId"
+              :items="items"
+              outlined
+              single-line
+              hide-details
+              dense
+              class="inline"
+              style="font-size: 0.9rem"
+            ></v-select>
           </v-col>
-            <v-col cols="auto">
-              <v-btn type="submit">이동</v-btn>
-            </v-col>
-            <v-col cols="auto">
-              <v-btn icon @click="createWorkspace">
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-form>
-
-
+        </v-row>
     </template>
   </v-app-bar>
 </template>
 
 <script>
 import axios from "axios";
+import { mapGetters } from 'vuex';
 
 export default {
-  name: "CommonTopMenu",
-  components: {
+  computed: {
+    ...mapGetters(['getWorkspaceId', 'getWorkspaceName']) // Vuex getter 매핑
   },
+  name: "CommonTopMenu",
+  components: {},
   data() {
     return {
       items: [],
       selectedValue: null,
+      isLoading : false,
     };
   },
   created() {
+    this.selectedValue = this.$store.getters.getWorkspaceId;
+    console.log("selectedValue >> ", this.selectedValue)
     this.fetchMyWorkspaceList();
   },
   methods: {
     async fetchMyWorkspaceList() {
       try {
-        const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtaW5qaTIyNzZAZ21haWwuY29tIiwiaWF0IjoxNzI3ODM0NTQ0LCJleHAiOjE3Mjg0MzkzNDR9.l3yDcj9uMg1iT_71PTeihdjUgp974t-Oz_ucZnmOQHF-i4d7la7X1MOY-WCNPaQx";
-        const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/workspace/list`, {
-          headers: {
-            'Authorization': `Bearer ${token}` // 토큰을 헤더에 추가
-          }
-        });
+        const response = await axios.get(
+          `${process.env.VUE_APP_API_BASE_URL}/workspace/list`
+        );
         this.items = response.data.result; // 내 워크스페이스 목록 가져오기
+
         console.log(response.data.result);
+
+
+        this.isLoading = true;
       } catch (e) {
         console.log(e);
       }
     },
-    emitSelected() {
-      this.$emit('selected', this.selectedValue);
-    }
-  }
+  },
 };
 </script>
 
@@ -83,7 +73,7 @@ export default {
   .title {
     font-size: 0.9rem; /* v-app-bar-title의 폰트 크기 설정 */
   }
-  .v-select *{
+  .v-select * {
     font-size: 0.8rem;
   }
 }

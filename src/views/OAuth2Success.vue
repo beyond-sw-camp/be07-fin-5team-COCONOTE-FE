@@ -36,7 +36,7 @@ export default {
       if (accessToken && refreshToken) {
         try {
           this.saveTokens(accessToken, refreshToken);
-          // this.$router.push({ name: "HOME" });
+          this.$router.push(`/workspace`); // 워크스페이스 입장 전 자동선택 페이지로 이동
         } catch (error) {
           console.error("토큰 저장 중 에러 발생:", error);
         }
