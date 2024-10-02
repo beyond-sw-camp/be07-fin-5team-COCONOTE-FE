@@ -42,12 +42,7 @@ export default {
                 wsInfo:this.wsInfo,
             }
             try {
-                const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtaW5qaTIyNzZAZ21haWwuY29tIiwiaWF0IjoxNzI3ODM0NTQ0LCJleHAiOjE3Mjg0MzkzNDR9.l3yDcj9uMg1iT_71PTeihdjUgp974t-Oz_ucZnmOQHF-i4d7la7X1MOY-WCNPaQx";
-                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/workspace/create`, body, {
-                    headers: {
-                        'Authorization': `Bearer ${token}` // 토큰을 헤더에 추가
-                    }
-                });
+                await axios.post(`${process.env.VUE_APP_API_BASE_URL}/workspace/create`, body);
                 this.$emit('update:dialog', false);
             } catch(e) {
                 console.log(e);
