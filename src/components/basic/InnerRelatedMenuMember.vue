@@ -15,6 +15,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
     props: {
     selectedValue: {
@@ -23,6 +25,31 @@ export default {
   },
   name: "InnerRelatedMenuMember",
   components: {},
+  updated() {
+    this.fetchWorkspaceInfo();
+  },
+  data() {
+    return {
+      workspaceInfo: {},
+      workspaceName: "",
+    };
+  },
+  methods: {
+    async fetchWorkspaceInfo() {
+      try {
+        const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJtaW5qaTIyNzZAZ21haWwuY29tIiwiaWF0IjoxNzI3ODM0NTQ0LCJleHAiOjE3Mjg0MzkzNDR9.l3yDcj9uMg1iT_71PTeihdjUgp974t-Oz_ucZnmOQHF-i4d7la7X1MOY-WCNPaQx";
+        
+        const wsList = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/workspace/list`, {
+          headers: {
+            'Authorization': `Bearer ${token}` // 토큰을 헤더에 추가
+          }
+        });
+        this.workspaceName = wsList.data.result[this.selectedValue -1].name;
+      } catch (e) {
+        console.log(e);
+      }
+    },
+  },
 };
 </script>
 
