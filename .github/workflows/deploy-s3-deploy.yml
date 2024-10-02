@@ -1,0 +1,60 @@
+name: deploy to aws s3
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 소스 코드 체크아웃
+      - name: source code checkout
+        uses: actions/checkout@v2
+
+      # 2. Node.js 설정
+      - name: setup node jobs
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+
+      # 3. .env 파일 생성
+      - name: Create .env file
+        run: |
+          echo "VUE_APP_API_BASE_URL=${{ secrets.VUE_APP_API_BASE_URL }}" >> .env
+
+      # 4. .npmrc 파일 생성 (토큰을 GitHub Secrets에서 가져옴)
+      - name: Create .npmrc file
+        run: |
+          echo "@tiptap-pro:registry=https://registry.tiptap.dev/" >> .npmrc
+          echo "//registry.tiptap.dev/:_authToken=${{ secrets.Tiptap_Auth_Token }}" >> .npmrc
+
+      # 5. npm install
+      - name: npm install
+        working-directory: .
+        run: npm install
+
+      # 6. npm 빌드
+      - name: npm build
+        working-directory: .
+        run: npm run build
+
+      # 7. AWS CLI 설정
+      - name: setup aws cli
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}  # 오타 수정
+          aws-secret-access-key: ${{ secrets.AWS_SECRET }}  # 오타 수정
+          aws-region: ap-northeast-2
+
+      # 8. S3 버킷 정리
+      - name: clear s3 bucket
+        run: aws s3 rm s3://coconote.site/ --recursive
+
+      # 9. 빌드 파일 S3에 업로드
+      - name: upload file in s3 bucket
+        run: aws s3 cp ./dist s3://coconote.site/ --recursive
+
+      # 10. CloudFront 캐시 무효화
+      - name: invalidate cloudfront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{secrets.CLOUDFRONT_DISTRIBUTION_ID}} --paths "/*"

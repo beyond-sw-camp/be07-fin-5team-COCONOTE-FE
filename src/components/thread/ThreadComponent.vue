@@ -1,39 +1,50 @@
 <template>
-  <v-app>
-    <div>
-      <h2>{{ room.name }}</h2>
-    </div>
+  <div class="container">
     <ul class="list-group" ref="messageList" id="list-group">
       <li
         class="list-group-item"
-        v-for="message in messages.slice().reverse()"
+        v-for="(message,index) in messages.slice().reverse()"
         :key="message.id"
       >
+      <div v-if="index > 0 && this.isDifferentDay(message.createdTime,  messages.slice().reverse()[index-1].createdTime)">
+        <div style="display: flex; align-content: center; text-align: center; margin: auto;">
+            <hr style="width: 27%; margin:auto;"><span style="margin:auto;">{{this.getDay(message.createdTime)}}</span><hr style="width: 27%; margin:auto;">
+        </div>
+    </div>
         <ThreadLineComponent
           :id="message.id"
           :image="message.image"
           :nickName="message.memberName"
-          :createdTime="message.createdTime"
+          :createdTime="this.getTime(message.createdTime)"
           :content="message.content"
           :files="message.files"
         />
       </li>
     </ul>
+    
     <div class="input-group">
-      <div class="input-group-prepend">
-        <label class="input-group-text">내용</label>
+      <div class="image-group">
+        <div v-for="(file, index) in fileList" :key="index">
+          <button type="button" @click="deleteImage(index)">삭제</button>
+          <img :src="file.imageUrl" alt="image" style="height: 120px; width: 120px; object-fit: cover;">
+          <p class="custom-contents">{{file.name}}</p>
+        </div>
       </div>
-      <input
-        type="text"
-        class="form-control"
-        v-model="message"
-        v-on:keypress.enter="sendMessage"
-      />
-      <div class="input-group-append">
-        <button class="btn btn-primary" type="button" @click="sendMessage">보내기</button>
+        
+      <div class="text-group">
+        <v-file-input v-model="files" @change="fileUpdate" multiple hide-input></v-file-input>
+        <input
+          type="text"
+          class="form-control"
+          v-model="message"
+          v-on:keypress.enter="sendMessage"
+        />
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="button" @click="sendMessage" :disabled="!message">보내기</button>
+        </div>
       </div>
     </div>
-  </v-app>
+  </div>
 </template>
 
 <script>
@@ -56,6 +67,7 @@ export default {
   },
   data() {
     return {
+      workspaceId: 2,
       roomId: "",
       room: { name: "sehotest" },
       sender: 1,
@@ -68,6 +80,8 @@ export default {
       currentPage: 0,
       isLoading: false,
       isLastPage: false,
+      files: null,
+      fileList: [],
     };
   },
   created() {
@@ -85,17 +99,38 @@ export default {
   beforeUnmount() {
     // window.removeEventListener('scroll', this.scrollPagination)
     this.$refs.messageList.removeEventListener("scroll", this.debouncedScrollPagination);
+    
+    if (this.subscription) {
+      this.subscription.unsubscribe(); // 구독 해제
+      console.log("WebSocket subscription unsubscribed.");
+    }
+    if (this.ws) {
+      this.ws.disconnect(() => {
+        console.log("WebSocket connection closed.");
+      });
+    }
   },
   computed: {},
   methods: {
+    fileUpdate(){
+        this.files.forEach(file => {
+          this.fileList.push({
+            name: file.name,
+            size: file.size,
+            type: file.type, 
+            imageUrl: URL.createObjectURL(file)})
+        });
+        
+    },
     async getMessageList() {
       try {
         let params = {
           size: this.pageSize,
           page: this.currentPage,
         };
+
         const response = await axios.get(
-          `http://localhost:8080/api/v1/thread/list/${this.id}`,
+          `${process.env.VUE_APP_API_BASE_URL}/thread/list/${this.id}`,
           { params }
         );
         this.currentPage++;
@@ -152,15 +187,29 @@ export default {
         }, 100);
       }
     },
+    async getPresignedURL(){
+      const reqFiles = this.fileList.map(file => ({fileName:file.name, fileSize:file.size}))
+      const response = await axios.post(
+          `${process.env.VUE_APP_API_BASE_URL}/files/presigned-urls`, reqFiles
+        );
+        console.log(response.data);
+        
+    },
+    deleteImage(index){
+      this.fileList.splice(index, 1);
+    },
     sendMessage() {
+      const authToken = localStorage.getItem('accessToken');
+      if(this.fileList.length>0) this.getPresignedURL();
       this.ws.send(
         "/pub/chat/message",
-        {},
+        {Authorization: authToken},
         JSON.stringify({
           type: "TALK",
           channelId: this.roomId,
           senderId: this.sender,
           content: this.message,
+          workspaceId: this.workspaceId,
         })
       );
       this.message = "";
@@ -177,11 +226,12 @@ export default {
       this.scrollToBottom();
     },
     connect() {
-      this.sock = new SockJS(`http://localhost:8080/api/v1/ws-stomp`);
+      this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
       this.ws = Stomp.over(this.sock);
 
+      const authToken = localStorage.getItem('accessToken');
       this.ws.connect(
-        {},
+        {Authorization: authToken},
         (frame) => {
           console.log("frame: ", frame);
           this.ws.subscribe(`/sub/chat/room/${this.roomId}`, (message) => {
@@ -190,11 +240,12 @@ export default {
           });
           this.ws.send(
             "/pub/chat/message",
-            {},
+            {Authorization: authToken},
             JSON.stringify({
               type: "ENTER",
               channelId: this.roomId,
               senderId: this.sender,
+              workspaceId: this.workspaceId,
             })
           );
         },
@@ -203,7 +254,7 @@ export default {
           if (this.reconnect++ <= 5) {
             setTimeout(() => {
               console.log("connection reconnect");
-              this.sock = new SockJS(`http://localhost:8080/api/v1/ws-stomp`);
+              this.sock = new SockJS(`${process.env.VUE_APP_API_BASE_URL}/ws-stomp`);
               this.ws = Stomp.over(this.sock);
               this.connect();
             }, 10 * 1000);
@@ -211,29 +262,83 @@ export default {
         }
       );
     },
+    getTime(createdAt) {
+            const createdTime = new Date(createdAt);
+            let hour = createdTime.getHours();
+            let minute = createdTime.getMinutes();
+            let ampm;
+            if(hour < 12) {
+                ampm = '오전'
+            } else {
+                ampm = '오후'
+                hour -= 12;
+            }
+            if(hour < 10) {
+                hour = '0'+hour;
+            }
+
+            if(minute < 10) {
+                minute = '0'+minute;
+            }
+
+            return ampm + ' ' + hour + ':' + minute;
+        },
+        isDifferentDay(d1, d2) {
+            const day1 = new Date(d1);
+            const day2 = new Date(d2);
+
+
+            if(day1.getFullYear() == day2.getFullYear()
+            && day1.getMonth() == day2.getMonth()
+            && day1.getDay() == day2.getDay()) return false;
+
+            return true;
+        },
+        getDay(createdAt) {
+            const createdTime = new Date(createdAt);
+
+            return `${createdTime.getFullYear()}년 ${createdTime.getMonth() + 1}월 ${createdTime.getDate()}일`; 
+        }
   },
 };
 </script>
 
 <style scoped>
-.v-app {
-  display: flex;
-  flex-direction: column;
-  height: 100vh; /* 화면 전체 높이 사용 */
+.container {
+  padding: 0 0 0 24px;
 }
 
 .list-group {
   flex-grow: 1; /* 리스트가 가능한 공간을 모두 차지 */
   overflow-y: auto; /* 세로 스크롤 가능 */
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 240px);
 }
 
 .input-group {
-  height: 50px;
   position: sticky;
   bottom: 0; /* 하단에 고정 */
   background-color: white; /* 배경색 설정 */
-  padding: 10px; /* 여백 추가 */
   z-index: 1; /* 리스트 위에 표시되도록 */
+  border: 1px solid;
+  margin-right: 24px;
+}
+.image-group {
+  display: flex;
+  flex-direction: row;
+  width: 120px;
+  max-height: 180px;
+}
+.text-group {
+  display: flex;
+  flex-direction: row;
+}
+.form-control {
+    width: 100%;
+}
+.custom-contents{
+  max-width: 120px; /* 제목의 최대 너비를 설정 */
+  overflow: hidden; /* 내용이 넘칠 경우 숨김 처리 */
+  text-overflow: ellipsis !important; /* 넘치는 텍스트에 '...' 추가 (이거 적용안됨 이후 수정필요)*/
+  white-space: nowrap; /* 텍스트 줄 바꿈 방지 */
 }
 </style>

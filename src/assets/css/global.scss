@@ -18,7 +18,8 @@ body {
     width: 100%;
   }
   .channelInsideContentWrap {
-    padding: 0 24px;
+    flex-grow: 1;
+    padding: 0 0 0 24px;
     overflow: auto;
   }
 }
