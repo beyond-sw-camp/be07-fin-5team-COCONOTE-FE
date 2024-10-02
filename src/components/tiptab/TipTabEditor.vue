@@ -178,6 +178,8 @@ export default {
       localHTML: "",
       defaultContent: this.initialContent, // 부모로부터 받은 데이터를 초기값으로 설정
       updateEditorContent: this.parentUpdateEditorContent,
+
+      recentKeyboardKey: null,
     };
   },
   watch: {
@@ -188,6 +190,7 @@ export default {
   },
   mounted() {
     console.log(">>>>>>>>PPP", this.defaultContent);
+    window.addEventListener("keydown", this.onKeydown); // 키보드 입력 이벤트 감지
     this.editor = new Editor({
       extensions: [
         Color.configure({ types: [TextStyle.name, ListItem.name] }),
@@ -225,6 +228,8 @@ export default {
         this.localJSON = this.editor.getJSON();
 
         // const selectedNode = this.editor.state.selection;
+
+        // console.log(this.recentKeyboardKey)
 
         // console.log('⭐ Node:', selectedNode);
         // if (!selectedNode) {
@@ -281,18 +286,21 @@ export default {
 
     this.editor.on("selectionUpdate", ({ editor }) => {
       // The selection has changed.
-      console.log(
-        `selectionUpdate`,
-        editor.view?.trackWrites?.data,
-        editor.view?.trackWrites?.parentElement?.dataset?.id,
-        editor.view?.trackWrites?.dataset?.id,
-        editor
-      );
+      // console.log(
+      //   `selectionUpdate`,
+      //   editor.view?.trackWrites?.data,
+      //   editor.view?.trackWrites?.parentElement?.dataset?.id,
+      //   editor.view?.trackWrites?.dataset?.id,
+      //   this.recentKeyboardKey,
+      //   editor
+      // );
 
       const selectedNode = editor.state.selection;
-      // console.log("😭😭😭😭😭")
-      // console.log(selectedNode)
-      // console.log("😭😭😭😭😭")
+      let isReturn = true;
+      console.log("😭😭😭😭😭");
+      console.log(selectedNode);
+      console.log("😭😭😭😭😭");
+
       if (!selectedNode) {
         return false;
       }
@@ -304,7 +312,45 @@ export default {
       const updateContent =
         selectedNode?.$head?.path[3]?.content?.content[0]?.text;
 
-      // console.log('⭐ Node:', updateBlockID, updateContent);
+      console.log(
+        "⭐ Node:",
+        updateBlockID,
+        updateContent,
+        this.recentKeyboardKey,
+        editor.view?.trackWrites?.dataset?.id,
+        updateContent == "",
+        editor.view?.trackWrites?.data,
+        updateContent == undefined
+      );
+      if (this.localJSON.content != "") {
+        this.localJSON = this.editor.getJSON();
+      }
+
+      // 삭제 확인 : keyCode 감지하려면 우선순위때문에 삭제한 id가 안나옴..
+      const originTargetBlockId = editor.view?.trackWrites?.dataset?.id;
+      const originTargetBlockContents = editor.view?.trackWrites?.data;
+      console.error(originTargetBlockId, originTargetBlockContents, updateBlockID);
+      if (
+        originTargetBlockContents == undefined &&
+        originTargetBlockId != undefined
+      ) {
+        // 내용이 undefined 이고, updateTarget이랑 originTarget이랑 다를 때감지 (삭제 확인용 감지)
+        const result = this.localJSON.content.find(
+          (item) => item.attrs && item.attrs.id === originTargetBlockId
+        );
+        console.log("result >>>>>>", result);
+        if (result == undefined) {
+          console.error("삭제다!!!");
+          this.$parent.deleteBlock(originTargetBlockId);
+          isReturn = false;
+        }
+      }
+
+      // 삭제 method를 보내지 않았다면
+      if (!isReturn) {
+        return false;
+      }
+      // element 위치 감지
       const searchElAndPrevEl = this.findPreviousId(
         this.localJSON.content,
         updateBlockID
@@ -475,8 +521,15 @@ export default {
       // 여기에 content 변경 시 처리할 로직 추가
       // this.editor.setContent(newContent); // 예: TipTap 에디터에 새로운 내용을 반영
     },
+    onKeydown(event) {
+      this.recentKeyboardKey = event.keyCode; // 누른 키 값을 저장
+      console.log("key event!! >> ", this.recentKeyboardKey);
+      // 8 : 백스페이스
+    },
   },
   beforeUnmount() {
+    // 컴포넌트 제거 시 이벤트 리스너 제거
+    window.removeEventListener("keydown", this.onKeydown);
     this.editor.destroy();
   },
 };

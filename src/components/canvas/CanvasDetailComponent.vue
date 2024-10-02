@@ -69,25 +69,19 @@ export default {
 
       defaultBlockFeIds: [],
       activeBlockId: null,
-      lastBlockId: null,
-      lastBlockContent: null,
       editorContent: null,
       parentUpdateEditorContent: "초기 값",
-
-      recentKeyboardKey: null,
     };
   },
   mounted() {
-    console.error("생성중...")
+    console.error("생성중...");
     this.sender = localStorage.getItem("wschat.sender");
-
-    window.addEventListener("keydown", this.onKeydown); // 키보드 입력 이벤트 감지
 
     this.handleCanvasIdChange(this.canvasId);
   },
   methods: {
     handleCanvasIdChange(newCanvasId) {
-      console.error("생성중...222 >>", newCanvasId)
+      console.error("생성중...222 >>", newCanvasId);
       this.detailCanvasId = newCanvasId;
       this.member = localStorage.getItem("wschat.sender");
       this.getCanvasAndBlockInfo();
@@ -253,9 +247,6 @@ export default {
       );
     },
     beforeRouteLeave() {
-      // 컴포넌트 제거 시 이벤트 리스너 제거
-      window.removeEventListener("keydown", this.onKeydown);
-
       // 컴포넌트가 파괴되기 전에 구독 해제 및 WebSocket 연결 종료
       if (this.subscription) {
         this.subscription.unsubscribe(); // 구독 해제
@@ -269,6 +260,25 @@ export default {
     },
 
     // tiptabEditor method
+    deleteBlock(blockFeId) {
+      const index = this.defaultBlockFeIds.indexOf(blockFeId);
+      if (index !== -1) { // 기존 값에 있다면 해당 아이디가
+      const prevBlockId = (index != 0) ? this.defaultBlockFeIds[index - 1] : null;
+        this.defaultBlockFeIds.splice(index, 1); // 배열에서 해당 값을 삭제
+        this.message = {
+          method: "delete",
+          canvasId: this.canvasId,
+          prevBlockId: prevBlockId,
+          parentBlockId: null,
+          contents: "z",
+          type: "paragraph", //삭제여서 타입 관계 X
+          feId: blockFeId,
+          member: this.sender, // 현재 접속한 user ⭐ 추후 변경
+        };
+
+        this.sendMessage();
+      }
+    },
     updateBlock(blockFeId, blockElType, blockContent, previousId, parentId) {
       if (!blockFeId) {
         return false;
@@ -294,9 +304,6 @@ export default {
         member: this.sender, // 현재 접속한 user ⭐ 추후 변경
       };
 
-      this.lastBlockId = this.activeBlockId;
-      this.lastBlockContent = blockContent;
-
       this.sendMessage();
     },
     checkBlockMethod(targetBlockFeId) {
@@ -304,25 +311,22 @@ export default {
         (element) => element == targetBlockFeId
       );
 
-      console.error(
-        `${this.recentKeyboardKey}, ${this.lastBlockId}, ${targetBlockFeId}, ${this.lastBlockContent}`
-      );
       // delete 했을 때의 라인값이 잡히지 않아서, 최근 수정한 값, 현재 값을 비교하면서 진행
-      if (
-        this.recentKeyboardKey == 8 && //현재 키보드가 지우기(backspace)
-        this.lastBlockId != targetBlockFeId && // 마지막 block id와 현 active block id가 다를 때
-        this.lastBlockContent == "" // 마지막 block content가 비어있을 때
-      ) {
-        const index = this.defaultBlockFeIds.indexOf(this.lastBlockId);
-        if (index !== -1) {
-          this.defaultBlockFeIds.splice(index, 1); // 배열에서 해당 값을 삭제
-        }
-        return "delete";
-      }
+      // if (
+      //   this.recentKeyboardKey == 8 && //현재 키보드가 지우기(backspace)
+      //   this.lastBlockId != targetBlockFeId && // 마지막 block id와 현 active block id가 다를 때
+      //   this.lastBlockContent == "" // 마지막 block content가 비어있을 때
+      // ) {
+      //   const index = this.defaultBlockFeIds.indexOf(this.lastBlockId);
+      //   if (index !== -1) {
+      //     this.defaultBlockFeIds.splice(index, 1); // 배열에서 해당 값을 삭제
+      //   }
+      //   return "delete";
+      // }
 
       if (found) {
         // block의 생성, 수정, 삭제 (create, update, delete)
-        console.error("찾은거 하기...", this.recentKeyboardKey);
+        // console.error("찾은거 하기...", this.recentKeyboardKey);
         return "update";
       } else {
         this.defaultBlockFeIds.push(targetBlockFeId);
@@ -335,10 +339,6 @@ export default {
     },
     deleteCanvas() {
       console.log("canvas 삭제 예정");
-    },
-    onKeydown(event) {
-      this.recentKeyboardKey = event.keyCode; // 누른 키 값을 저장
-      // 8 : 백스페이스
     },
   },
   beforeUnmount() {
