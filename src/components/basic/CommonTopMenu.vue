@@ -17,9 +17,14 @@
         class="inline"
         style="font-size:0.9rem"
       ></v-select>
-            </v-col>
+          </v-col>
             <v-col cols="auto">
               <v-btn type="submit">이동</v-btn>
+            </v-col>
+            <v-col cols="auto">
+              <v-btn icon @click="createWorkspace">
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
             </v-col>
           </v-row>
         </v-form>
