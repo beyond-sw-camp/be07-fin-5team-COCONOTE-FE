@@ -3,14 +3,20 @@ import ChannelList from "@/views/channel/ChannelList.vue";
 
 export const channelRouter = [
     {
-        path: '/channel/view',
+        path: '/channel/:channelId',
         name: 'ChannelView',
+        component: ChannelView,
+        props: true
+    },
+    {
+        path: '/channel/view',
+        name: 'ChannelView2',
         component: ChannelView,
         props: true
     },  
     {
         path: '/channel/view/:channelId',
-        name: 'ChannelView',
+        name: 'ChannelView3',
         component: ChannelView,
         props: true
     },

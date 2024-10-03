@@ -1,4 +1,4 @@
-import {createRouter, createWebHistory} from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 
 import HomePage from '@/views/HomePage.vue';
 import LoginPage from '@/views/LoginPage.vue';
@@ -26,6 +26,10 @@ const routes = [
         name: 'LOGIN',
         meta: { showHeaderAndSidebar: false },
         component: LoginPage,
+        beforeEnter(to, from, next) {
+            console.log("Entering LOGIN route with meta:", to.meta.showHeaderAndSidebar);
+            next(); // 이동할지 여부를 결정
+        },
     },
     {
         path: '/oauth2/success',

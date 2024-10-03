@@ -2,14 +2,14 @@
   <v-app class="app global_bg" style="height:100%;">
     <v-sheet style="height:100%;">
       <v-row no-gutters>
-        <v-col cols="12" class="CommonTopContainer" v-if="showHeaderAndSidebar">
-          <CommonTopMenu @selected="handleSelected" />
+        <v-col cols="12" class="CommonTopContainer" v-if="!isHiddenPage">
+          <CommonTopMenu v-if="!isHiddenPage" @selected="handleSelected" />
         </v-col>
       </v-row>
       <v-row no-gutters  style="height:100%;">
-        <v-col cols="2" v-if="showHeaderAndSidebar">
+        <v-col cols="2" v-if="!isHiddenPage">
           <div class="d-flex innerMenuContainer">
-            <InnerMenu :selectedValue="selectedValue" />
+            <InnerMenu v-if="!isHiddenPage" :selectedValue="selectedValue" />
           </div>
         </v-col>
         <v-col :cols="showHeaderAndSidebar ? 10 : 12">
@@ -29,7 +29,15 @@ import InnerMenu from "@/components/basic/InnerMenu.vue";
 export default {
   computed: {
     showHeaderAndSidebar() {
-      return this.$route.meta.showHeaderAndSidebar !== false;
+      const value = this.$route.meta.showHeaderAndSidebar !== false;
+      console.log("showHeaderAndSidebar:", value); // 추가
+      return value;
+    },
+    isHiddenPage() {
+      // 보이지 않아야 할 페이지 목록
+      const hiddenPages = ['/login', '/'];
+      // 현재 경로가 목록에 포함되어 있는지 확인
+      return hiddenPages.includes(this.$route.path);
     },
   },
   name: "App",
