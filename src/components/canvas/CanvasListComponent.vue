@@ -27,10 +27,19 @@ import axios from "axios";
 
 export default {
   name: "CanvasListComponent",
+  created() {
+    this.channelId = this.$route.params.channelId;
+    console.error()
+    if(this.channelId == "" || this.channelId == undefined){
+      alert("잘못된 접근입니다.")
+      return false
+    }
+    this.findAllRoom();
+  },
   data() {
     return {
       canvasName: "",
-      channelId: 1,
+      channelId: null,
       chatrooms: [],
     };
   },
@@ -42,7 +51,9 @@ export default {
         )
         .then((response) => {
           this.chatrooms = response.data.result.content;
-          this.changeCanvasId(response.data.result.content[0].id); // 첫번째 id 자동선택
+          if(this.chatrooms.length > 0){
+            this.changeCanvasId(response.data.result.content[0].id); // 첫번째 id 자동선택
+          }
         });
     },
     createCanvas() {
@@ -74,10 +85,6 @@ export default {
         this.$emit("updateCanvasId", canvasId);
       }
     },
-  },
-
-  created() {
-    this.findAllRoom();
   },
 };
 </script>

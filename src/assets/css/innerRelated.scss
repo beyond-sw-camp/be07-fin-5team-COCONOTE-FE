@@ -1,7 +1,7 @@
 .innerSubMenu {
   background-color: #37508c !important;
   padding: 28px 8px 8px 8px !important;
-  position:static !important;
+  position: static !important;
   height: 100% !important;
 
   * {
@@ -37,5 +37,11 @@
   }
   .channel-item {
     font-size: 12px !important;
+    .v-list-item__prepend {
+      display: inline !important;
+      .v-list-item__spacer {
+        width: 24px !important;
+      }
+    }
   }
 }

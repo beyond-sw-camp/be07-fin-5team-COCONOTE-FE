@@ -1,25 +1,14 @@
-import CanvasList from "@/views/canvas/CanvasList.vue";
-import CanvasDetail from "@/views/canvas/CanvasDetail.vue";
+
 import CanvasView from "@/views/canvas/CanvasView.vue";
 
 export const canvasRouter = [
     {
-        path: '/canvas/list',
-        name: 'CanvasList',
-        component: CanvasList
+        path: '/channel/:channelId/canvas/view',
+        name: 'CanvasEmptyView',
+        component: CanvasView
     },
     {
-        path: '/canvas/detail',
-        name: 'CanvasDetail',
-        component: CanvasDetail
-    },  
-    {
-        path: '/canvas/view/',
-        name: 'CanvasView',
-        component: CanvasView
-    },  
-    {
-        path: '/canvas/view/:id',
+        path: '/channel/:channelId/canvas/view/:canvasId',
         name: 'CanvasView',
         component: CanvasView
     },  
