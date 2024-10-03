@@ -3,7 +3,6 @@
     <div>
       {{ workspaceName }}<v-icon v-if="!workspaceUser">mdi-cogs</v-icon>
   </div>
-    <!-- <h1>{{ workspaceName }}    <v-icon>mdi-cog</v-icon></h1> -->
     <v-list v-for="section in workspaceInfo" :key="section.sectionId">
       <v-list-subheader class="section-title">
         <v-icon icon="mdi-menu-right" />{{ section.sectionName }}
@@ -35,7 +34,6 @@
 <script>
 import axios from "axios";
 import { mapActions } from "vuex";
-
 
 export default {
     props: {
