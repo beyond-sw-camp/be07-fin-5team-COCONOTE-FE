@@ -10,7 +10,7 @@ import { threadRouter } from '@/router/threadRouter'
 import { channelRouter } from '@/router/channelRouter'
 import { driveRouter } from '@/router/driveRouter'
 import SearchComponent from '@/components/search/SearchComponent.vue';
-import { workspaceRouter } from './workspaceRouter';
+import { workspaceRouter } from '@/router/workspaceRouter';
 
 const routes = [
     {

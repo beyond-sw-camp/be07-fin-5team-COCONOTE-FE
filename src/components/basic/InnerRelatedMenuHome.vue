@@ -218,7 +218,7 @@ export default {
     border-radius: 8px;
     min-height: auto !important;
     &:hover {
-      background-color: opacify($color: #2f3653, $amount: 0.5);
+      background-color: #6c759c;
     }
   }
   .icon-cog {
