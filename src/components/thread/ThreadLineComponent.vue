@@ -27,7 +27,7 @@
   
 <script>
     export default {
-    props: ['image', 'nickName', 'createdTime','content','files','id'],
+    props: ['id','type', 'image', 'nickName', 'createdTime','content','files','childThreads','tags'],
     data() {
         return {};
     },

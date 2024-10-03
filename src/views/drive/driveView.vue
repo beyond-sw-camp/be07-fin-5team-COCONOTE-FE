@@ -1,0 +1,35 @@
+<template>
+    <div class="channelInsideContainer">
+      <ChannelCommonMenu />
+      <ThreadComponent :id="this.id"/>
+    </div>
+  </template>
+    
+    <script>
+  import ChannelCommonMenu from "@/components/basic/ChannelCommonMenu.vue";
+  import ThreadComponent from "@/components/thread/ThreadComponent.vue";
+  
+  export default {
+    props: {
+      id: {
+        type: String,
+        required: true,
+      },
+    },
+    components: {
+      ChannelCommonMenu,
+      ThreadComponent,
+    },
+    data() {
+      return {};
+    },
+    created() {},
+    mounted() {},
+    updated() {},
+    beforeUnmount() {},
+    computed: {},
+    methods: {},
+  };
+  </script>
+    
+  

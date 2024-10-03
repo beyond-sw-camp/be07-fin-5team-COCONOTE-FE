@@ -18,10 +18,16 @@
         </v-row>
     </template>
   </v-app-bar>
+            <CreateWorkspaceModal 
+        v-model = "createWorkspace"
+        @update:dialog="createWorkspace = $event"
+        >
+          </CreateWorkspaceModal>
 </template>
 
 <script>
 import axios from "axios";
+import CreateWorkspaceModal from '@/components/createSpaces/CreateWorkspaceModal.vue';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -29,12 +35,15 @@ export default {
     ...mapGetters(['getWorkspaceId', 'getWorkspaceName']) // Vuex getter 매핑
   },
   name: "CommonTopMenu",
-  components: {},
+  components: {
+    CreateWorkspaceModal
+  },
   data() {
     return {
       items: [],
       selectedValue: null,
       isLoading : false,
+      createWorkspace:false,
     };
   },
   created() {
@@ -58,7 +67,14 @@ export default {
         console.log(e);
       }
     },
-  },
+    emitSelected() {
+      this.$emit('selected', this.selectedValue);
+    },
+          showWorkspaceModal() {
+            this.createWorkspace = true;
+            console.log(this.createWorkspace);
+        }
+  }
 };
 </script>
 
