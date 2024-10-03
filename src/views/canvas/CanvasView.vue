@@ -50,7 +50,7 @@
         </v-col>
         <v-col class="canvasDetailContainer pa-0">
           <v-progress-circular
-            v-if="!isLoading"
+            v-if="canvasId == null"
             indeterminate
             color="primary"
           ></v-progress-circular>
