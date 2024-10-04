@@ -7,4 +7,10 @@ export const threadRouter = [
         component: ThreadView,
         props: true
     },  
+    {
+        path: '/channel/:channelId/thread/view',
+        name: 'ThreadView',
+        component: ThreadView,
+        props: true
+    },
 ]

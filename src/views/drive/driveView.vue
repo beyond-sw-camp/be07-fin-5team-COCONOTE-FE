@@ -1,24 +1,22 @@
 <template>
     <div class="channelInsideContainer">
-      <ChannelCommonMenu />
-      <ThreadComponent :id="this.id"/>
+      <ChannelCommonMenu :menu="'drive'" :channelId="channelId" />
+      <h1>drive</h1>
     </div>
   </template>
     
     <script>
   import ChannelCommonMenu from "@/components/basic/ChannelCommonMenu.vue";
-  import ThreadComponent from "@/components/thread/ThreadComponent.vue";
   
   export default {
     props: {
-      id: {
+      channelId: {
         type: String,
         required: true,
       },
     },
     components: {
       ChannelCommonMenu,
-      ThreadComponent,
     },
     data() {
       return {};

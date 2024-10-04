@@ -1,5 +1,6 @@
 // driveRouter.js
 import FolderComponent from '@/components/drive/FolderComponent.vue';
+import DriveView from '@/views/drive/DriveView.vue';
 
 export const driveRouter = [
     {
@@ -7,5 +8,11 @@ export const driveRouter = [
         name: 'FolderComponent',
         component: FolderComponent,
         props: true, // 채널 ID를 컴포넌트에 props로 전달
+    },
+    {
+        path: '/channel/:channelId/drive/view',
+        name: 'DriveView',
+        component: DriveView,
+        props: true
     },
 ];

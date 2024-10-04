@@ -1,6 +1,6 @@
 <template>
   <div class="channelInsideContainer">
-    <ChannelCommonMenu />
+    <ChannelCommonMenu :menu="'canvas'" :channelId="channelId" />
     <div class="channelInsideContentWrap">
       <v-row class="canvasContatiner ma-0">
         <v-col cols="2" class="canvasListContainer pa-0">
@@ -71,6 +71,12 @@ import CanvasListComponent from "@/components/canvas/CanvasListComponent.vue";
 import CanvasDetailComponent from "@/components/canvas/CanvasDetailComponent.vue";
 
 export default {
+  props: {
+      channelId: {
+        type: String,
+        required: true,
+      },
+    },
   components: {
     ChannelCommonMenu,
     CanvasListComponent,
