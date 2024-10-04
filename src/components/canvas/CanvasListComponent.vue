@@ -64,7 +64,7 @@ export default {
         const params = {
           title: this.canvasName,
           parentCanvasId: null,
-          channelId: 1,
+          channelId: this.$route.params.channelId,
         };
         axios
           .post(`${process.env.VUE_APP_API_BASE_URL}/canvas/create`, params)

@@ -86,7 +86,7 @@ export default {
   },
   methods: {
     async loadChannelDrive() {
-      const channelId = this.$route.params.id; // URL에서 채널 ID 추출
+      const channelId = this.$route.params.channelId; // URL에서 채널 ID 추출
       try {
         const response = await axios.get(`${process.env.VUE_APP_API_BASE_URL}/channel/${channelId}/drive`);
         const data = response.data.result;
@@ -158,7 +158,7 @@ export default {
     async createFolder() {
       try {
         const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/drive/folder/create`, {
-          channelId: this.$route.params.id, // URL에서 채널 ID 추출
+          channelId: this.$route.params.channelId, // URL에서 채널 ID 추출
           parentFolderId: this.currentFolderId,
         });
         alert(response.data.result.message || '폴더 생성 완료');
@@ -283,7 +283,7 @@ export default {
         return;
       }
       const metadataDto = {
-        channelId: this.$route.params.id, // 적절한 채널 ID로 수정
+        channelId: this.$route.params.channelId, // 적절한 채널 ID로 수정
         folderId: this.currentFolderId,
         fileType: 'OTHER',
         fileSaveListDto: uploadedFileUrls.map((url, index) => ({
