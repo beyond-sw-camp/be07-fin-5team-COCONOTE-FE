@@ -18,9 +18,9 @@
       </p>
     </div>
     <div class="menuBtns">
-      <button class="active">쓰레드</button>
-      <button>캔버스</button>
-      <button>드라이브</button>
+      <button @click="moveThread" :class="{ active: menu === 'thread' }" >쓰레드</button>
+      <button @click="moveCanvas" :class="{ active: menu === 'canvas' }" >캔버스</button>
+      <button @click="moveDrive" :class="{ active: menu === 'drive' }" >드라이브</button>
       <button class="badge">
         2분할 보기 <v-icon icon="mdi-eye-outline" class="eye"/>
       </button>
@@ -30,6 +30,7 @@
 
 <script>
 export default {
+  props: ['channelId', 'menu'],
   name: "ChannelCommonMenu",
   components: {},
   data() {
@@ -37,6 +38,17 @@ export default {
 
     };
   },
+  methods:{
+    moveThread(){
+      this.$router.push(`/channel/${this.channelId}/thread/view`)
+    },
+    moveCanvas(){
+      this.$router.push(`/channel/${this.channelId}/canvas/view`)
+    },
+    moveDrive(){
+      this.$router.push(`/channel/${this.channelId}/drive/view`)
+    },
+  }
 };
 </script>
 
