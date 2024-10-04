@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/views/HomePage.vue';
 import LoginPage from '@/views/LoginPage.vue';
 import OAuth2Success from '@/views/OAuth2Success.vue'; // OAuth2 성공 페이지 컴포넌트
-
+import MemberView from '@/views/member/MemberView.vue';
 
 import { canvasRouter } from './canvasRouter';
 import { threadRouter } from '@/router/threadRouter'
@@ -36,6 +36,12 @@ const routes = [
         name: 'OAuth2Success',
         meta: { showHeaderAndSidebar: false },
         component: OAuth2Success, // 컴포넌트 경로를 실제 파일로 변경해 주세요.
+    },
+    {
+        path: '/member',
+        name: 'MemberView',
+        component: MemberView,
+        props: true
     },
     {
         path: '/workspace/:workspaceId/search',
