@@ -37,7 +37,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import { mapGetters } from "vuex";
 export default {
   components: {},
@@ -57,16 +56,9 @@ export default {
     if (!this.getChannelId) {
       console.log("없다...")
         // 처음 로딩 시점에 channelId가 없다면 로직 실행
-    }else{
-      this.checkMemberChannelJoin()
-      
     }
   },
   methods: {
-    async checkMemberChannelJoin(){
-      axios
-/api/v1/channel/{channelId}/isjoin
-    }
   },
 };
 </script>

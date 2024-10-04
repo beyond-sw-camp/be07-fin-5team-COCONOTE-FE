@@ -163,12 +163,23 @@ export default {
       console.log(response);
       this.sections = response.data.result;
     },
-    changeChannel(id,name) {
+    async changeChannel(id,name) {
       this.selectedChannelMenuId = id;
       // window.location.href = `/channel/${id}`;
       this.setChannelInfoActions(id); // Vuex store에 업데이트
       this.setChannelNameInfoActions(name); // Vuex store에 업데이트
-      this.$router.push(`/channel/${id}`);
+
+      const response = await axios.get(
+        `${process.env.VUE_APP_API_BASE_URL}/channel/${this.$store.getters.getChannelId}/isjoin`
+      );
+
+      const isJoin = response.data.result;
+
+      if(isJoin){
+        this.$router.push(`/channel/${id}/thread/view`);
+      }else{
+        this.$router.push(`/channel/${id}`);
+      }
     },
     async createSection() {
       try {
