@@ -24,7 +24,7 @@ const channel = {
         }
     },
     getters: {
-        getChannelId: state => state.channelId,
+        getChannelId: state => (state.channelId == null) ? this.$route.params.channelId : state.channelId,
         getChannelName: state => state.channelName,
     }
 }

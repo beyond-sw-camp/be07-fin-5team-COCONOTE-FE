@@ -13,9 +13,9 @@
         <v-list-item
           v-for="channel in section.channelList"
           :key="channel.channelId"
-          :class="{ 'selected-item': selectedMenuId == channel.channelId }"
+          :class="{ 'selected-item': selectedChannelMenuId == channel.channelId }"
           class="channel-item"
-          @click="changeChannel(channel.channelId)"
+          @click="changeChannel(channel.channelId, channel.channelName)"
         >
           <template v-slot:prepend>
             <v-icon v-if="!channel.isPublic" icon="mdi-lock"></v-icon>
@@ -111,6 +111,7 @@
 <script>
 import axios from "axios";
 import { mapGetters } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   name: "InnerRelatedMenuHome",
@@ -140,6 +141,7 @@ export default {
   data() {
     return {
       sections: [],
+      selectedMenuId : null,
       selectedChannelMenuId: null,
       sectionDialog: false,
       channelDialog: false,
@@ -153,6 +155,7 @@ export default {
     };
   },
   methods: {
+    ...mapActions(["setChannelInfoActions", "setChannelNameInfoActions"]),
     async getSectionData() {
       const response = await axios.get(
         `${process.env.VUE_APP_API_BASE_URL}/section/list/${this.getWorkspaceId}`
@@ -160,8 +163,11 @@ export default {
       console.log(response);
       this.sections = response.data.result;
     },
-    changeChannel(id) {
-      this.selectedMenuId = id;
+    changeChannel(id,name) {
+      this.selectedChannelMenuId = id;
+      // window.location.href = `/channel/${id}`;
+      this.setChannelInfoActions(id); // Vuex store에 업데이트
+      this.setChannelNameInfoActions(name); // Vuex store에 업데이트
       this.$router.push(`/channel/${id}`);
     },
     async createSection() {
