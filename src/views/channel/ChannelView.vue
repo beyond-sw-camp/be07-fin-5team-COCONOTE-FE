@@ -9,7 +9,7 @@
         <v-btn>채널 참여</v-btn>
         <v-btn @click="this.$router.push(`/channel/${this.$store.getters.getChannelId}/thread/view`)">쓰레드로 이동</v-btn>
         <v-btn @click="this.$router.push(`/channel/${this.$store.getters.getChannelId}/canvas/view`)">캔버스로 이동</v-btn>
-        <v-btn @click="this.$router.push(`/channel/${this.$store.getters.getChannelId}/drive`)">드라이브로 이동</v-btn>
+        <v-btn @click="this.$router.push(`/channel/${this.$store.getters.getChannelId}/drive/view`)">드라이브로 이동</v-btn>
       </div>
     </div>
   </div>

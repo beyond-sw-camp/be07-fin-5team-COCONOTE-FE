@@ -1,7 +1,7 @@
 <template>
   <div class="channelInsideContainer">
-    <ChannelCommonMenu />
-    <ThreadComponent :id="this.channelId"/>
+    <ChannelCommonMenu :menu="'thread'" :channelId="channelId" />
+    <ThreadComponent :id="channelId"/>
   </div>
 </template>
   

@@ -1,6 +1,6 @@
 <template>
     <div class="channelInsideContainer">
-      <ChannelCommonMenu />
+      <ChannelCommonMenu :menu="'drive'"/>
       <FolderComponent :id="this.channelId"/>
     </div>
   </template>
@@ -18,7 +18,7 @@
     },
     components: {
       ChannelCommonMenu,
-      FolderComponent,
+      FolderComponent
     },
     data() {
       return {};

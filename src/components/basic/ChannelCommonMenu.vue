@@ -14,9 +14,9 @@
       <p>우리의 공지가 들어갑니다.</p>
     </div>
     <div class="menuBtns">
-      <button class="active">쓰레드</button>
-      <button>캔버스</button>
-      <button>드라이브</button>
+      <button @click="moveMenu('thread')" :class="{ active: menu === 'thread' }" >쓰레드</button>
+      <button @click="moveMenu('canvas')" :class="{ active: menu === 'canvas' }" >캔버스</button>
+      <button @click="moveMenu('drive')" :class="{ active: menu === 'drive' }" >드라이브</button>
       <button class="badge">
         2분할 보기 <v-icon icon="mdi-eye-outline" class="eye" />
       </button>
@@ -25,26 +25,23 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
+  props: ['menu'],
   name: "ChannelCommonMenu",
   components: {},
   computed: {
-    channelId() {
-      return this.$store.getters["channel/getChannelId"];
-    },
-    channelName() {
-      return this.$store.getters["channel/getChannelName"];
-    },
-  },
-  watch: {
-    channelId(newVal) {
-      console.log("channelId가 변경되었습니다:", newVal);
-      // channelId가 변경될 때 필요한 추가 작업을 여기에 작성
-    }
+    ...mapGetters(['getChannelId', 'getChannelName'])
   },
   data() {
     return {};
   },
+  methods:{
+    moveMenu(name){
+      this.$router.push(`/channel/${this.$store.getters.getChannelId}/${name}/view`)
+    },
+  }
 };
 </script>
 
