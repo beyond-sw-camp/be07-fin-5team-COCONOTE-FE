@@ -18,7 +18,7 @@
           @click="changeChannel(channel.channelId)"
         >
           <template v-slot:prepend>
-            <v-icon v-if="isPublic" icon="mdi-lock"></v-icon>
+            <v-icon v-if="!channel.isPublic" icon="mdi-lock"></v-icon>
             <v-icon v-else icon="mdi-apple-keyboard-command"></v-icon>
           </template>
 
