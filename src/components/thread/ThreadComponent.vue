@@ -56,6 +56,7 @@ import SockJS from "sockjs-client";
 // import Stomp from "stompjs";
 import { Stomp } from "@stomp/stompjs";
 import { debounce } from "lodash";
+import { mapGetters } from 'vuex';
 
 export default {
   props: {
@@ -69,7 +70,7 @@ export default {
   },
   data() {
     return {
-      workspaceId: 2,
+      workspaceId: null,
       roomId: "",
       room: { name: "sehotest" },
       sender: 1,
@@ -90,6 +91,7 @@ export default {
   },
   created() {
     this.roomId = this.id;
+    this.workspaceId = this.$store.getters.getWorkspaceId;
     this.getMessageList();
     this.connect();
     this.scrollToBottom();
@@ -114,7 +116,9 @@ export default {
       });
     }
   },
-  computed: {},
+  computed: {
+    ...mapGetters(['getWorkspaceId', 'getWorkspaceName'])
+  },
 
   methods: {
     async sendMessage() {
