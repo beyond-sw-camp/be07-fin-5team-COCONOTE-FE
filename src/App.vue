@@ -14,7 +14,7 @@
         </v-col>
         <v-col :cols="showHeaderAndSidebar ? 10 : 12">
           <v-sheet class="main-content">
-            <router-view />
+            <router-view :key="$route.fullPath" />
           </v-sheet>
         </v-col>
       </v-row>

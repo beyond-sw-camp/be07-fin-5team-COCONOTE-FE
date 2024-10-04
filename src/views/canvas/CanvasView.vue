@@ -50,10 +50,13 @@
         </v-col>
         <v-col class="canvasDetailContainer pa-0">
           <v-progress-circular
-            v-if="canvasId == null"
+            v-if="isLoading && canvasId == null"
             indeterminate
             color="primary"
           ></v-progress-circular>
+          <div v-else-if="canvasId == null">
+            <h1>캔버스가 없습니다.</h1>
+          </div>
           <CanvasDetailComponent
             v-else
             :canvasId="canvasId"

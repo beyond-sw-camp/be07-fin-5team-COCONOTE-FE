@@ -1,12 +1,13 @@
 <template>
     <div class="channelInsideContainer">
-      <ChannelCommonMenu :menu="'drive'" :channelId="channelId" />
-      <h1>drive</h1>
+      <ChannelCommonMenu :menu="'drive'"/>
+      <FolderComponent :id="this.channelId"/>
     </div>
   </template>
     
     <script>
   import ChannelCommonMenu from "@/components/basic/ChannelCommonMenu.vue";
+  import FolderComponent from '@/components/drive/FolderComponent.vue';
   
   export default {
     props: {
@@ -17,6 +18,7 @@
     },
     components: {
       ChannelCommonMenu,
+      FolderComponent
     },
     data() {
       return {};

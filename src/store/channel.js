@@ -10,9 +10,11 @@ const channel = {
     mutations: {
         setChannelInfo(state, channelValue) {
             state.channelId = channelValue;
+            localStorage.setItem("channelId", channelValue);
         },
         setChannelNameInfo(state, channelNameValue) {
             state.channelName = channelNameValue;
+            localStorage.setItem("channelName", channelNameValue);
         }
     },
     actions: {
@@ -24,7 +26,17 @@ const channel = {
         }
     },
     getters: {
-        getChannelId: state => state.channelId,
+        getChannelId(state){
+            let returnState = null;
+            returnState = (state.channelId == null) ? localStorage.getItem("channelId") : state.channelId
+            if(returnState == null){
+                setTimeout(() => {
+                    return (state.channelId == null) ? localStorage.getItem("channelId") : state.channelId
+                }, 100);
+                return false;
+            }
+            return returnState;
+        },
         getChannelName: state => state.channelName,
     }
 }
