@@ -1,7 +1,7 @@
 <template>
   <div class="channelInsideContainer">
     <ChannelCommonMenu />
-    <ThreadComponent :id="this.id"/>
+    <ThreadComponent :id="this.channelId"/>
   </div>
 </template>
   
@@ -11,7 +11,7 @@ import ThreadComponent from "@/components/thread/ThreadComponent.vue";
 
 export default {
   props: {
-    id: {
+    channelId: {
       type: String,
       required: true,
     },

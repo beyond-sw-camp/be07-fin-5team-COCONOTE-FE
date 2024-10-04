@@ -12,6 +12,9 @@
           연결이 안된 회원이라면? 하단 버튼으로 채널에 입장하도록 하고 쓰레드 주소로 이동
         </p>
         <v-btn>채널 참여</v-btn>
+        <v-btn @click="this.$router.push(`/channel/${this.channelId}/thread/view`)">쓰레드로 이동</v-btn>
+        <v-btn @click="this.$router.push(`/channel/${this.channelId}/canvas/view`)">캔버스로 이동</v-btn>
+        <v-btn @click="this.$router.push(`/channel/${this.channelId}/drive`)">드라이브로 이동</v-btn>
       </div>
 
       <h1>channel View Test</h1>
@@ -42,7 +45,9 @@ export default {
   },
   computed: {},
   watch: {},
-  created() {},
+  created() {
+    this.channelId = this.$route.params.channelId;
+  },
   methods: {},
 };
 </script>
