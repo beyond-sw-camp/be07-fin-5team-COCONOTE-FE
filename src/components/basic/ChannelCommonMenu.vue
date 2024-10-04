@@ -24,7 +24,7 @@
     </div>
 
     <!-- 모달 컴포넌트 -->
-    <ChannelMemberModal v-if="isChannelMemberModalOpen" :channelId="channelId" :workspaceId="getWorkspaceId"
+    <ChannelMemberModal v-if="isChannelMemberModalOpen" :channelId="getChannelId" :workspaceId="getWorkspaceId"
       @closeModal="closeChannelMemberInviteModal" />
   </div>
 </template>
